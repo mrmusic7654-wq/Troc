@@ -1,4 +1,4 @@
-name: Build vidma APK
+name: Build Troc APK
 
 on:
   push:
@@ -35,20 +35,29 @@ jobs:
               "project_number": "000000000000",
               "project_id": "dummy-project"
             },
-            "client": [],
+            "client": [
+              {
+                "client_info": {
+                  "mobilesdk_app_id": "1:000000000000:android:0000000000000000",
+                  "android_client_info": {
+                    "package_name": "com.aistudio.troc.chatxi"
+                  }
+                },
+                "oauth_client": [],
+                "api_key": [
+                  {
+                    "current_key": "dummy_key"
+                  }
+                ],
+                "services": {
+                  "appinvite_service": {
+                    "other_platform_oauth_client": []
+                  }
+                }
+              }
+            ],
             "configuration_version": "1"
           }
-          EOF
-
-      - name: Set Gemini API Key
-        run: |
-          echo "GEMINI_API_KEY=dummy_key" >> $GITHUB_ENV
-          mkdir -p app/src/main/res/values
-          cat > app/src/main/res/values/api_keys.xml << 'EOF'
-          <?xml version="1.0" encoding="utf-8"?>
-          <resources>
-              <string name="gemini_api_key">dummy_key</string>
-          </resources>
           EOF
 
       - name: Fix signing config
@@ -63,5 +72,5 @@ jobs:
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: vidma
+          name: Troc
           path: app/build/outputs/apk/debug/app-debug.apk
