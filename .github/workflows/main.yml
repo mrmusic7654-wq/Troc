@@ -60,6 +60,10 @@ jobs:
           }
           EOF
 
+      - name: Fix GEMINI_API_KEY reference
+        run: |
+          sed -i 's/BuildConfig.GEMINI_API_KEY/"dummy_key"/g' app/src/main/java/com/example/ui/viewmodel/ChatViewModel.kt
+
       - name: Fix signing config
         run: |
           sed -i '/signingConfigs {/,/^  }/d' app/build.gradle.kts
@@ -72,5 +76,5 @@ jobs:
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: Troc
+          name: troc
           path: app/build/outputs/apk/debug/app-debug.apk
