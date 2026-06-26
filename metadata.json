@@ -1,0 +1,6 @@
+{
+  "name": "Troc",
+  "description": "A high-performance AI reasoning assistant built with a beautiful Milky White and Shadow Black Yin-Yang style.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
