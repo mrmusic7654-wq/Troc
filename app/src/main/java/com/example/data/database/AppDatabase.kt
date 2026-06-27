@@ -1,13 +1,25 @@
+// app/src/main/java/com/example/data/database/AppDatabase.kt
 package com.example.data.database
 
 import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import com.example.data.settings.ApiKeyConfig
 
-@Database(entities = [ChatSession::class, ChatMessage::class], version = 1, exportSchema = false)
+@Database(
+    entities = [
+        ChatSession::class,
+        ChatMessage::class,
+        ApiKeyConfig::class
+    ],
+    version = 2,
+    exportSchema = false
+)
 abstract class AppDatabase : RoomDatabase() {
+
     abstract fun chatDao(): ChatDao
+    abstract fun apiKeyDao(): ApiKeyDao
 
     companion object {
         @Volatile
@@ -18,7 +30,7 @@ abstract class AppDatabase : RoomDatabase() {
                 val instance = Room.databaseBuilder(
                     context.applicationContext,
                     AppDatabase::class.java,
-                    "troc_chat_database"
+                    "troc_agent_database"
                 )
                 .fallbackToDestructiveMigration()
                 .build()
