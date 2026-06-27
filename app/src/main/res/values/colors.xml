@@ -1,4 +1,3 @@
-<!-- app/src/main/res/values/colors.xml -->
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="purple_200">#FFBB86FC</color>
@@ -8,19 +7,29 @@
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+
     <color name="milky_white">#FFF5F5F0</color>
     <color name="milky_white_card">#FFFFFFFF</color>
     <color name="milky_white_text">#FFF5F5F0</color>
+    <color name="milky_white_surface">#FFFAFAF7</color>
+    <color name="milky_white_hover">#FFEEEEE8</color>
+
     <color name="shadow_black">#FF0A0A0A</color>
     <color name="shadow_black_card">#FF161616</color>
     <color name="shadow_black_text">#FF0A0A0A</color>
+    <color name="shadow_black_surface">#FF111111</color>
+    <color name="shadow_black_hover">#FF1C1C1C</color>
+
     <color name="balance_gold">#FFCBB28D</color>
     <color name="balance_gold_light">#FFD4C4A8</color>
     <color name="balance_gold_dark">#FFB89B6E</color>
+
     <color name="border_gray_light">#FFE5E5DE</color>
     <color name="border_gray_dark">#FF2C2C2B</color>
+
     <color name="muted_gray_light">#FF7C7C75</color>
     <color name="muted_gray_dark">#FF9E9E96</color>
+
     <color name="success_green">#FF4CAF50</color>
     <color name="warning_amber">#FFFFB74D</color>
     <color name="error_red">#FFEF5350</color>
