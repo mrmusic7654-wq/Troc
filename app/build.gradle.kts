@@ -12,7 +12,7 @@ plugins {
 
 android {
     namespace = "com.example"
-    compileSdk { version = release(36) { minorApiLevel = 1 } }
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.aistudio.troc.chatxi"
@@ -27,7 +27,6 @@ android {
             useSupportLibrary = true
         }
 
-        // Build config fields
         buildConfigField("String", "APP_VERSION", "\"${versionName}\"")
         buildConfigField("long", "BUILD_TIMESTAMP", "${System.currentTimeMillis()}L")
     }
@@ -97,7 +96,6 @@ android {
     }
 }
 
-// Configure the Secrets Gradle Plugin
 secrets {
     propertiesFileName = ".env"
     defaultPropertiesFileName = ".env.example"
@@ -108,18 +106,15 @@ googleServices {
 }
 
 dependencies {
-    // Compose BOM
     implementation(platform(libs.androidx.compose.bom))
     implementation(platform(libs.firebase.bom))
 
-    // AndroidX Core
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
 
-    // Compose UI
     implementation(libs.androidx.compose.ui)
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.ui.tooling.preview)
@@ -127,51 +122,37 @@ dependencies {
     implementation(libs.androidx.compose.material.icons.core)
     implementation(libs.androidx.compose.material.icons.extended)
 
-    // Navigation
     implementation(libs.androidx.navigation.compose)
 
-    // Room Database
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
-    "ksp"(libs.androidx.room.compiler)
+    ksp(libs.androidx.room.compiler)
 
-    // Networking
     implementation(libs.retrofit)
     implementation(libs.converter.moshi)
     implementation(libs.okhttp)
     implementation(libs.logging.interceptor)
 
-    // Moshi
     implementation(libs.moshi.kotlin)
-    "ksp"(libs.moshi.kotlin.codegen)
+    ksp(libs.moshi.kotlin.codegen)
 
-    // Coroutines
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.kotlinx.coroutines.core)
 
-    // Firebase
     implementation(libs.firebase.ai)
     implementation(libs.firebase.appcheck.recaptcha)
 
-    // Coil Image Loading
     implementation(libs.coil.compose)
-
-    // DataStore
     implementation(libs.androidx.datastore.preferences)
 
-    // Camera (for future video features)
     implementation(libs.androidx.camera.camera2)
     implementation(libs.androidx.camera.core)
     implementation(libs.androidx.camera.lifecycle)
     implementation(libs.androidx.camera.view)
 
-    // Permissions
     implementation(libs.accompanist.permissions)
-
-    // Location
     implementation(libs.play.services.location)
 
-    // Testing
     testImplementation(libs.junit)
     testImplementation(libs.androidx.junit)
     testImplementation(libs.androidx.core)
@@ -182,14 +163,12 @@ dependencies {
     testImplementation(libs.roborazzi.compose)
     testImplementation(libs.roborazzi.junit.rule)
 
-    // Android Testing
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(libs.androidx.runner)
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
 
-    // Debug
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
 }
