@@ -1,10 +1,8 @@
-// app/src/main/res/values/strings.xml
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Troc Agent</string>
     <string name="app_tagline">Harmonized Intelligence</string>
 
-    <!-- Navigation -->
     <string name="nav_chat">Troc Chat</string>
     <string name="nav_browser">Web Browser</string>
     <string name="nav_code_gen">App Builder</string>
@@ -13,7 +11,6 @@
     <string name="nav_files">Files</string>
     <string name="nav_settings">Settings</string>
 
-    <!-- Chat -->
     <string name="chat_hint">Harmonize your thoughts…</string>
     <string name="chat_send">Send message</string>
     <string name="chat_new">New Balance Chat</string>
@@ -21,142 +18,31 @@
     <string name="chat_empty">Perfect void. Begin a conversation to create balance.</string>
     <string name="chat_thinking">Troc is thinking…</string>
     <string name="chat_deep_think_active">Deep Think Active</string>
-    <string name="chat_generated_in">Generated in %1$s</string>
 
-    <!-- Settings -->
     <string name="settings_title">Settings</string>
-    <string name="settings_api_keys">API Keys &amp; Configuration</string>
+    <string name="settings_api_keys">API Keys</string>
     <string name="settings_search_hint">Search services…</string>
-    <string name="settings_key_saved">%1$s key encrypted &amp; saved</string>
-    <string name="settings_key_validated">%1$s — Connection balanced ✓</string>
-    <string name="settings_key_failed">%1$s rejected the key</string>
-    <string name="settings_key_removed">%1$s key removed</string>
-    <string name="settings_validate_all">Validate All Keys</string>
     <string name="settings_get_key">Get Key</string>
-    <string name="settings_save_validate">Save &amp; Validate</string>
-    <string name="settings_revalidate">Revalidate</string>
+    <string name="settings_save_validate">Save and Validate</string>
     <string name="settings_verified">Verified</string>
     <string name="settings_validating">Validating…</string>
-    <string name="settings_enter_key">Enter %1$s API key…</string>
-    <string name="settings_key_placeholder">••••••••</string>
-    <string name="settings_remove_key_title">Remove API Key?</string>
-    <string name="settings_remove_key_message">This will delete your %1$s key. Connected features will stop working.</string>
     <string name="settings_delete">Delete</string>
     <string name="settings_cancel">Cancel</string>
-    <string name="settings_no_keys">No API keys configured</string>
-    <string name="settings_active_keys">%1$d active</string>
 
-    <!-- API Services -->
     <string name="service_gemini">Google Gemini</string>
     <string name="service_openai">OpenAI</string>
-    <string name="service_anthropic">Anthropic Claude</string>
     <string name="service_huggingface">Hugging Face</string>
     <string name="service_replicate">Replicate</string>
     <string name="service_telegram">Telegram Bot</string>
     <string name="service_github">GitHub</string>
-    <string name="service_gitlab">GitLab</string>
-    <string name="service_supabase">Supabase</string>
-    <string name="service_firebase">Firebase</string>
-    <string name="service_elevenlabs">ElevenLabs</string>
-    <string name="service_runway">Runway ML</string>
 
-    <!-- Service Categories -->
-    <string name="category_ai_models">AI Models</string>
-    <string name="category_ai_platforms">AI Platforms</string>
-    <string name="category_messaging">Messaging</string>
-    <string name="category_development">Development</string>
-    <string name="category_backend">Backend Services</string>
-    <string name="category_media">Media Generation</string>
-
-    <!-- Voice Input -->
     <string name="voice_title">Vocal Harmony</string>
-    <string name="voice_listening">I\'m listening… speak your thoughts</string>
-    <string name="voice_capturing">Capturing your voice…</string>
-    <string name="voice_processing">Processing your words…</string>
-    <string name="voice_no_speech">No speech detected. Speak clearly and try again.</string>
-    <string name="voice_permission_required">Microphone Access Required</string>
-    <string name="voice_permission_message">Troc needs microphone permission to capture your voice and transform it into balanced text.</string>
+    <string name="voice_listening">Listening…</string>
     <string name="voice_grant_permission">Grant Microphone Permission</string>
-    <string name="voice_paused">Paused — tap mic to resume</string>
-    <string name="voice_error">Error occurred</string>
-    <string name="voice_cancel">Cancel</string>
-    <string name="voice_retry">Retry</string>
-    <string name="voice_start">Start</string>
-    <string name="voice_restart">Restart</string>
 
-    <!-- Agent Swarm -->
     <string name="agent_swarm_title">Agent Swarm</string>
     <string name="agent_orchestrating">Orchestrating…</string>
-    <string name="agent_ready">Ready</string>
-    <string name="agent_cancel">Cancel</string>
-    <string name="agent_retry">Retry Orchestration</string>
-    <string name="agent_progress">Progress</string>
-    <string name="agent_thinking">Agents are thinking…</string>
-    <string name="agent_idle">Idle</string>
-    <string name="agent_active">%1$d active</string>
 
-    <!-- Agent Types -->
-    <string name="agent_planner">Planner</string>
-    <string name="agent_coder">Coder</string>
-    <string name="agent_researcher">Researcher</string>
-    <string name="agent_creator">Creator</string>
-    <string name="agent_reviewer">Reviewer</string>
-    <string name="agent_executor">Executor</string>
-
-    <!-- Agent Status -->
-    <string name="status_idle">Idle</string>
-    <string name="status_planning">Planning</string>
-    <string name="status_executing">Executing</string>
-    <string name="status_completed">Completed</string>
-    <string name="status_failed">Failed</string>
-    <string name="status_waiting">Waiting</string>
-
-    <!-- Code Block -->
-    <string name="code_copied">Code copied to clipboard</string>
-    <string name="code_copy">Copy code</string>
-    <string name="code_expand">Expand</string>
-    <string name="code_collapse">Collapse</string>
-    <string name="code_editing">Editing</string>
-    <string name="code_lines">Lines</string>
-    <string name="code_chars">Chars</string>
-    <string name="code_words">Words</string>
-
-    <!-- Drawer -->
-    <string name="drawer_header">Troc Agent</string>
-    <string name="drawer_subtitle">Harmonized Intelligence</string>
-    <string name="drawer_workspaces">Workspaces</string>
-    <string name="drawer_sessions">History Logs</string>
-    <string name="drawer_new_chat">New Balance Chat</string>
-    <string name="drawer_clear_all">Clear All Conversations</string>
-    <string name="drawer_filter_all">All</string>
-    <string name="drawer_filter_pinned">Pinned</string>
-    <string name="drawer_filter_active">Active</string>
-    <string name="drawer_filter_archived">Archived</string>
-    <string name="drawer_sort_recent">Recent</string>
-    <string name="drawer_sort_name">Name</string>
-    <string name="drawer_sort_activity">Activity</string>
-    <string name="drawer_sort_created">Created</string>
-    <string name="drawer_rename">Rename</string>
-    <string name="drawer_pin">Pin</string>
-    <string name="drawer_unpin">Unpin</string>
-    <string name="drawer_archive">Archive</string>
-    <string name="drawer_unarchive">Unarchive</string>
-    <string name="drawer_delete">Delete</string>
-    <string name="drawer_empty">Perfect Void</string>
-    <string name="drawer_empty_subtitle">Begin a new conversation\nto create balance</string>
-    <string name="drawer_no_matches">No matches for \"%1$s\"</string>
-    <string name="drawer_search_hint">Search conversations…</string>
-    <string name="drawer_premium">Premium Feature</string>
-    <string name="drawer_version">Troc Agent v1.0</string>
-    <string name="drawer_session_count">%1$d sessions</string>
-
-    <!-- Dashboard -->
-    <string name="dashboard_title">Troc Agent</string>
-    <string name="dashboard_subtitle">Your harmonized AI companion. Build apps, generate videos,\nwrite code, or explore ideas — all in perfect balance.</string>
-    <string name="dashboard_prompt_hint">Describe what you want to create…</string>
-    <string name="dashboard_try_asking">Try asking…</string>
-
-    <!-- Common -->
     <string name="common_ok">OK</string>
     <string name="common_cancel">Cancel</string>
     <string name="common_delete">Delete</string>
@@ -166,20 +52,5 @@
     <string name="common_back">Back</string>
     <string name="common_loading">Loading…</string>
     <string name="common_error">An error occurred</string>
-    <string name="common_success">Success</string>
-    <string name="common_coming_soon">Coming in the next phase</string>
-
-    <!-- Errors -->
-    <string name="error_network">Network unreachable. Check your connection.</string>
-    <string name="error_invalid_key">Invalid API key. Please update in Settings.</string>
-    <string name="error_rate_limited">Rate limited. Pause for balance.</string>
-    <string name="error_access_denied">Access denied. Verify API key permissions.</string>
-    <string name="error_generic">Harmony disrupted: %1$s</string>
-    <string name="error_generation_halted">Generation halted. Balance preserved.</string>
-    <string name="error_no_reply">The void returns only silence. Balance is maintained.</string>
-
-    <!-- Permissions -->
-    <string name="permission_microphone_title">Microphone permission required</string>
-    <string name="permission_microphone_message">To allow balanced speech input, please grant microphone permissions.</string>
-    <string name="permission_grant">Grant Permission</string>
+    <string name="common_coming_soon">Coming soon</string>
 </resources>
