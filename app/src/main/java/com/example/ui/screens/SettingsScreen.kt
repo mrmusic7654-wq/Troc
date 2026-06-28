@@ -59,7 +59,6 @@ fun SettingsScreen(
     val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
     val categoryServices by viewModel.categoryServices.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
-    val scope = rememberCoroutineScope()
 
     LaunchedEffect(Unit) {
         viewModel.snackbarMessage.collect { event ->
@@ -121,10 +120,8 @@ fun SettingsScreen(
                 placeholder = { Text("Search services...", color = MutedGrayDark, fontSize = 14.sp) },
                 leadingIcon = { Icon(Icons.Rounded.Search, contentDescription = null, tint = MutedGrayDark, modifier = Modifier.size(20.dp)) },
                 trailingIcon = {
-                    if (searchQuery.isNotEmpty()) {
-                        IconButton(onClick = { viewModel.updateSearchQuery("") }) {
-                            Icon(Icons.Rounded.Close, contentDescription = "Clear", tint = MutedGrayDark, modifier = Modifier.size(18.dp))
-                        }
+                    if (searchQuery.isNotEmpty()) IconButton(onClick = { viewModel.updateSearchQuery("") }) {
+                        Icon(Icons.Rounded.Close, contentDescription = "Clear", tint = MutedGrayDark, modifier = Modifier.size(18.dp))
                     }
                 },
                 shape = RoundedCornerShape(12.dp),
@@ -270,7 +267,9 @@ private fun ApiKeyCard(
                     },
                     shape = RoundedCornerShape(10.dp),
                     colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = BalanceGold, unfocusedBorderColor = BorderGrayDark, focusedContainerColor = ShadowBlack.copy(alpha = 0.3f), unfocusedContainerColor = ShadowBlack.copy(alpha = 0.3f), cursorColor = BalanceGold, focusedTextColor = MilkyWhiteText, unfocusedTextColor = MilkyWhiteText),
-                    singleLine = true, keyboardOptions = KeyboardOptions(KeyboardType.Password, ImeAction.Done), keyboardActions = KeyboardActions { focusManager.clearFocus() },
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Done),
+                    keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() }),
                     textStyle = TextStyle(fontFamily = FontFamily.Monospace, fontSize = 13.sp)
                 )
                 Spacer(Modifier.height(12.dp))
