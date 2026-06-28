@@ -1,4 +1,3 @@
-// app/build.gradle.kts
 import com.google.gms.googleservices.GoogleServicesPlugin.MissingGoogleServicesStrategy
 
 plugins {
@@ -22,7 +21,6 @@ android {
         versionName = "1.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
-}
 
     signingConfigs {
         create("release") {
