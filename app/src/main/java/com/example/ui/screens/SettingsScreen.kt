@@ -1,9 +1,6 @@
 // app/src/main/java/com/example/ui/screens/SettingsScreen.kt
 package com.example.ui.screens
 
-import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.*
@@ -18,17 +15,17 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.*
+import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.scale
-import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -71,10 +68,7 @@ fun SettingsScreen(
                 is SnackbarEvent.Error -> event.message
                 is SnackbarEvent.Info -> event.message
             }
-            snackbarHostState.showSnackbar(
-                message = message,
-                duration = SnackbarDuration.Short
-            )
+            snackbarHostState.showSnackbar(message = message, duration = SnackbarDuration.Short)
         }
     }
 
@@ -82,50 +76,23 @@ fun SettingsScreen(
         modifier = modifier,
         snackbarHost = {
             SnackbarHost(hostState = snackbarHostState) { data ->
-                Snackbar(
-                    snackbarData = data,
-                    containerColor = ShadowBlackCard,
-                    contentColor = MilkyWhiteText,
-                    shape = RoundedCornerShape(12.dp)
-                )
+                Snackbar(snackbarData = data, containerColor = ShadowBlackCard, contentColor = MilkyWhiteText, shape = RoundedCornerShape(12.dp))
             }
         },
         topBar = {
             TopAppBar(
                 title = {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Rounded.Settings,
-                            contentDescription = null,
-                            tint = BalanceGold,
-                            modifier = Modifier.size(24.dp)
-                        )
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                        Icon(Icons.Rounded.Settings, contentDescription = null, tint = BalanceGold, modifier = Modifier.size(24.dp))
                         Column {
-                            Text(
-                                text = "Settings",
-                                fontWeight = FontWeight.Bold,
-                                style = MaterialTheme.typography.titleMedium,
-                                color = MaterialTheme.colorScheme.onBackground
-                            )
-                            Text(
-                                text = "API Keys & Configuration",
-                                style = MaterialTheme.typography.labelSmall,
-                                color = BalanceGold,
-                                fontSize = 11.sp
-                            )
+                            Text("Settings", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onBackground)
+                            Text("API Keys & Configuration", style = MaterialTheme.typography.labelSmall, color = BalanceGold, fontSize = 11.sp)
                         }
                     }
                 },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(
-                            imageVector = Icons.Rounded.ArrowBack,
-                            contentDescription = "Back",
-                            tint = MaterialTheme.colorScheme.onBackground
-                        )
+                        Icon(Icons.Rounded.ArrowBack, contentDescription = "Back", tint = MaterialTheme.colorScheme.onBackground)
                     }
                 },
                 actions = {
@@ -133,268 +100,111 @@ fun SettingsScreen(
                     if (activeKeysCount > 0) {
                         AssistChip(
                             onClick = { viewModel.validateAllKeys() },
-                            label = {
-                                Text(
-                                    text = "$activeKeysCount active",
-                                    fontSize = 11.sp,
-                                    fontWeight = FontWeight.Medium
-                                )
-                            },
-                            leadingIcon = {
-                                Icon(
-                                    imageVector = Icons.Rounded.VerifiedUser,
-                                    contentDescription = null,
-                                    modifier = Modifier.size(14.dp),
-                                    tint = BalanceGold
-                                )
-                            },
-                            colors = AssistChipDefaults.assistChipColors(
-                                containerColor = BalanceGold.copy(alpha = 0.1f),
-                                labelColor = BalanceGold
-                            ),
-                            border = AssistChipDefaults.assistBorderStroke(
-                                borderColor = BalanceGold.copy(alpha = 0.3f)
-                            ),
+                            label = { Text("$activeKeysCount active", fontSize = 11.sp, fontWeight = FontWeight.Medium) },
+                            leadingIcon = { Icon(Icons.Rounded.VerifiedUser, contentDescription = null, modifier = Modifier.size(14.dp), tint = BalanceGold) },
+                            colors = AssistChipDefaults.assistChipColors(containerColor = BalanceGold.copy(alpha = 0.1f), labelColor = BalanceGold),
+                            border = BorderStroke(1.dp, BalanceGold.copy(alpha = 0.3f)),
                             modifier = Modifier.padding(end = 8.dp)
                         )
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.background
-                )
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background)
             )
         },
         containerColor = MaterialTheme.colorScheme.background
     ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-        ) {
-            SearchBar(
-                query = searchQuery,
-                onQueryChange = { viewModel.updateSearchQuery(it) },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 8.dp)
+        Column(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
+            OutlinedTextField(
+                value = searchQuery,
+                onValueChange = { viewModel.updateSearchQuery(it) },
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+                placeholder = { Text("Search services...", color = MutedGrayDark, fontSize = 14.sp) },
+                leadingIcon = { Icon(Icons.Rounded.Search, contentDescription = null, tint = MutedGrayDark, modifier = Modifier.size(20.dp)) },
+                trailingIcon = {
+                    if (searchQuery.isNotEmpty()) {
+                        IconButton(onClick = { viewModel.updateSearchQuery("") }) {
+                            Icon(Icons.Rounded.Close, contentDescription = "Clear", tint = MutedGrayDark, modifier = Modifier.size(18.dp))
+                        }
+                    }
+                },
+                shape = RoundedCornerShape(12.dp),
+                colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = BalanceGold, unfocusedBorderColor = BorderGrayDark, focusedContainerColor = ShadowBlackCard, unfocusedContainerColor = ShadowBlackCard, cursorColor = BalanceGold, focusedTextColor = MilkyWhiteText, unfocusedTextColor = MilkyWhiteText),
+                singleLine = true,
+                textStyle = MaterialTheme.typography.bodyMedium
             )
 
-            CategoryFilterChips(
-                selectedCategory = selectedCategory,
-                onCategorySelected = { viewModel.selectCategory(it) },
-                modifier = Modifier.padding(vertical = 4.dp)
-            )
+            ScrollableTabRow(
+                selectedTabIndex = ServiceCategory.entries.indexOf(selectedCategory).coerceAtLeast(0),
+                modifier = Modifier.padding(vertical = 4.dp),
+                containerColor = Color.Transparent,
+                contentColor = BalanceGold,
+                edgePadding = 16.dp,
+                divider = {},
+                indicator = { tabPositions ->
+                    if (selectedCategory != null) {
+                        val index = ServiceCategory.entries.indexOf(selectedCategory)
+                        if (index < tabPositions.size) TabRowDefaults.SecondaryIndicator(Modifier.tabIndicatorOffset(tabPositions[index]), color = BalanceGold, height = 2.dp)
+                    }
+                }
+            ) {
+                Tab(selected = selectedCategory == null, onClick = { viewModel.selectCategory(null) }) {
+                    Text("All", fontSize = 12.sp, fontWeight = if (selectedCategory == null) FontWeight.Bold else FontWeight.Normal, color = if (selectedCategory == null) BalanceGold else MutedGrayDark)
+                }
+                ServiceCategory.entries.forEach { category ->
+                    Tab(selected = selectedCategory == category, onClick = { viewModel.selectCategory(category) }) {
+                        Text(category.label, fontSize = 12.sp, fontWeight = if (selectedCategory == category) FontWeight.Bold else FontWeight.Normal, color = if (selectedCategory == category) BalanceGold else MutedGrayDark)
+                    }
+                }
+            }
 
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(
-                    start = 16.dp,
-                    end = 16.dp,
-                    top = 8.dp,
-                    bottom = 32.dp
-                ),
+                contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 32.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 categoryServices.forEach { (category, services) ->
                     item(key = "header_${category.name}") {
-                        CategoryHeader(category = category, serviceCount = services.size)
+                        Row(
+                            modifier = Modifier.fillMaxWidth().padding(top = 8.dp, bottom = 4.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            Box(modifier = Modifier.size(32.dp).clip(RoundedCornerShape(8.dp)).background(BalanceGold.copy(alpha = 0.15f)), contentAlignment = Alignment.Center) {
+                                Icon(
+                                    imageVector = when (category) {
+                                        ServiceCategory.AI_MODEL -> Icons.Rounded.Psychology
+                                        ServiceCategory.AI_PLATFORM -> Icons.Rounded.Cloud
+                                        ServiceCategory.MESSAGING -> Icons.Rounded.Chat
+                                        ServiceCategory.DEVELOPMENT -> Icons.Rounded.Code
+                                        ServiceCategory.BACKEND -> Icons.Rounded.Storage
+                                        ServiceCategory.MEDIA -> Icons.Rounded.Movie
+                                    },
+                                    contentDescription = null, tint = BalanceGold, modifier = Modifier.size(16.dp)
+                                )
+                            }
+                            Column {
+                                Text(category.label, fontWeight = FontWeight.SemiBold, fontSize = 14.sp, color = MilkyWhiteText)
+                                Text("${services.size} service${if (services.size != 1) "s" else ""}", fontSize = 11.sp, color = MutedGrayDark)
+                            }
+                        }
                     }
-
-                    items(
-                        items = services,
-                        key = { it.name }
-                    ) { service ->
+                    items(items = services, key = { it.name }) { service ->
                         val config = apiKeys[service.name]
                         val isValidatingThis = isValidating.contains(service.name)
                         val error = validationErrors[service.name]
-
-                        ApiKeyCard(
-                            service = service,
-                            config = config,
-                            isValidating = isValidatingThis,
-                            validationError = error,
-                            onKeyChange = { viewModel.updateApiKey(service, it) },
-                            onToggle = { viewModel.toggleApiKey(service.name, it) },
-                            onValidate = { viewModel.validateApiKey(service) },
-                            onDelete = { viewModel.deleteApiKey(service.name) },
-                            onClearError = { viewModel.clearError(service.name) }
-                        )
+                        ApiKeyCard(service, config, isValidatingThis, error, { viewModel.updateApiKey(service, it) }, { viewModel.toggleApiKey(service.name, it) }, { viewModel.validateApiKey(service) }, { viewModel.deleteApiKey(service.name) }, { viewModel.clearError(service.name) })
                     }
                 }
             }
-        }
-    }
-}
-
-@Composable
-private fun SearchBar(
-    query: String,
-    onQueryChange: (String) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    OutlinedTextField(
-        value = query,
-        onValueChange = onQueryChange,
-        modifier = modifier,
-        placeholder = {
-            Text(
-                text = "Search services...",
-                color = MutedGrayDark,
-                fontSize = 14.sp
-            )
-        },
-        leadingIcon = {
-            Icon(
-                imageVector = Icons.Rounded.Search,
-                contentDescription = null,
-                tint = MutedGrayDark,
-                modifier = Modifier.size(20.dp)
-            )
-        },
-        trailingIcon = {
-            if (query.isNotEmpty()) {
-                IconButton(onClick = { onQueryChange("") }) {
-                    Icon(
-                        imageVector = Icons.Rounded.Close,
-                        contentDescription = "Clear",
-                        tint = MutedGrayDark,
-                        modifier = Modifier.size(18.dp)
-                    )
-                }
-            }
-        },
-        shape = RoundedCornerShape(12.dp),
-        colors = OutlinedTextFieldDefaults.colors(
-            focusedBorderColor = BalanceGold,
-            unfocusedBorderColor = BorderGrayDark,
-            focusedContainerColor = ShadowBlackCard,
-            unfocusedContainerColor = ShadowBlackCard,
-            cursorColor = BalanceGold,
-            focusedTextColor = MilkyWhiteText,
-            unfocusedTextColor = MilkyWhiteText
-        ),
-        singleLine = true,
-        textStyle = MaterialTheme.typography.bodyMedium
-    )
-}
-
-@Composable
-private fun CategoryFilterChips(
-    selectedCategory: ServiceCategory?,
-    onCategorySelected: (ServiceCategory?) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    ScrollableTabRow(
-        selectedTabIndex = ServiceCategory.entries.indexOf(selectedCategory).coerceAtLeast(0),
-        modifier = modifier,
-        containerColor = Color.Transparent,
-        contentColor = BalanceGold,
-        edgePadding = 16.dp,
-        divider = {},
-        indicator = { tabPositions ->
-            if (selectedCategory != null) {
-                val index = ServiceCategory.entries.indexOf(selectedCategory)
-                if (index < tabPositions.size) {
-                    TabRowDefaults.SecondaryIndicator(
-                        modifier = Modifier.tabIndicatorOffset(tabPositions[index]),
-                        color = BalanceGold,
-                        height = 2.dp
-                    )
-                }
-            }
-        }
-    ) {
-        Tab(
-            selected = selectedCategory == null,
-            onClick = { onCategorySelected(null) },
-            text = {
-                Text(
-                    text = "All",
-                    fontSize = 12.sp,
-                    fontWeight = if (selectedCategory == null) FontWeight.Bold else FontWeight.Normal,
-                    color = if (selectedCategory == null) BalanceGold else MutedGrayDark
-                )
-            }
-        )
-        ServiceCategory.entries.forEach { category ->
-            Tab(
-                selected = selectedCategory == category,
-                onClick = { onCategorySelected(category) },
-                text = {
-                    Text(
-                        text = category.label,
-                        fontSize = 12.sp,
-                        fontWeight = if (selectedCategory == category) FontWeight.Bold else FontWeight.Normal,
-                        color = if (selectedCategory == category) BalanceGold else MutedGrayDark
-                    )
-                }
-            )
-        }
-    }
-}
-
-@Composable
-private fun CategoryHeader(
-    category: ServiceCategory,
-    serviceCount: Int,
-    modifier: Modifier = Modifier
-) {
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(top = 8.dp, bottom = 4.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(10.dp)
-    ) {
-        Box(
-            modifier = Modifier
-                .size(32.dp)
-                .clip(RoundedCornerShape(8.dp))
-                .background(BalanceGold.copy(alpha = 0.15f)),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                imageVector = when (category) {
-                    ServiceCategory.AI_MODEL -> Icons.Rounded.Psychology
-                    ServiceCategory.AI_PLATFORM -> Icons.Rounded.Cloud
-                    ServiceCategory.MESSAGING -> Icons.Rounded.Chat
-                    ServiceCategory.DEVELOPMENT -> Icons.Rounded.Code
-                    ServiceCategory.BACKEND -> Icons.Rounded.Storage
-                    ServiceCategory.MEDIA -> Icons.Rounded.Movie
-                },
-                contentDescription = null,
-                tint = BalanceGold,
-                modifier = Modifier.size(16.dp)
-            )
-        }
-        Column {
-            Text(
-                text = category.label,
-                fontWeight = FontWeight.SemiBold,
-                fontSize = 14.sp,
-                color = MilkyWhiteText
-            )
-            Text(
-                text = "$serviceCount service${if (serviceCount != 1) "s" else ""}",
-                fontSize = 11.sp,
-                color = MutedGrayDark
-            )
         }
     }
 }
 
 @Composable
 private fun ApiKeyCard(
-    service: ApiService,
-    config: ApiKeyConfig?,
-    isValidating: Boolean,
-    validationError: String?,
-    onKeyChange: (String) -> Unit,
-    onToggle: (Boolean) -> Unit,
-    onValidate: () -> Unit,
-    onDelete: () -> Unit,
-    onClearError: () -> Unit,
-    modifier: Modifier = Modifier
+    service: ApiService, config: ApiKeyConfig?, isValidating: Boolean, validationError: String?,
+    onKeyChange: (String) -> Unit, onToggle: (Boolean) -> Unit, onValidate: () -> Unit,
+    onDelete: () -> Unit, onClearError: () -> Unit, modifier: Modifier = Modifier
 ) {
     var keyInput by remember(config?.apiKey) { mutableStateOf(config?.apiKey ?: "") }
     var isKeyVisible by remember { mutableStateOf(false) }
@@ -409,339 +219,74 @@ private fun ApiKeyCard(
 
     val statusColor = when {
         isValidating -> BalanceGold
-        isValid -> Color(0xFF4CAF50)
-        validationError != null -> Color(0xFFEF5350)
+        isValid -> SuccessGreen
+        validationError != null -> ErrorRed
         isConfigured -> BalanceGold
         else -> MutedGrayDark
     }
 
-    val pulseAnimation by rememberInfiniteTransition(label = "pulse").animateFloat(
-        initialValue = 1f,
-        targetValue = 1.05f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(1000, easing = FastOutSlowInEasing),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "pulse_scale"
-    )
+    val pulseAnimation by rememberInfiniteTransition(label = "pulse").animateFloat(1f, 1.05f, infiniteRepeatable(tween(1000, easing = FastOutSlowInEasing), RepeatMode.Reverse), label = "pulse_scale")
 
     Card(
-        modifier = modifier
-            .fillMaxWidth()
-            .scale(if (isValidating) pulseAnimation else 1f),
+        modifier = modifier.fillMaxWidth().scale(if (isValidating) pulseAnimation else 1f),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = if (isEnabled) ShadowBlackCard else ShadowBlackCard.copy(alpha = 0.5f)
-        ),
-        border = BorderStroke(
-            width = 1.dp,
-            color = when {
-                isValid -> Color(0xFF4CAF50).copy(alpha = 0.3f)
-                validationError != null -> Color(0xFFEF5350).copy(alpha = 0.3f)
-                isConfigured -> BalanceGold.copy(alpha = 0.2f)
-                else -> BorderGrayDark
-            }
-        ),
+        colors = CardDefaults.cardColors(containerColor = if (isEnabled) ShadowBlackCard else ShadowBlackCard.copy(alpha = 0.5f)),
+        border = BorderStroke(1.dp, when { isValid -> SuccessGreen.copy(alpha = 0.3f); validationError != null -> ErrorRed.copy(alpha = 0.3f); isConfigured -> BalanceGold.copy(alpha = 0.2f); else -> BorderGrayDark }),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
-        Column(
-            modifier = Modifier.padding(16.dp)
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(10.dp)
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .size(36.dp)
-                            .clip(CircleShape)
-                            .background(statusColor.copy(alpha = 0.1f)),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        if (isValidating) {
-                            CircularProgressIndicator(
-                                modifier = Modifier.size(18.dp),
-                                color = BalanceGold,
-                                strokeWidth = 2.dp
-                            )
-                        } else {
-                            Icon(
-                                imageVector = when {
-                                    isValid -> Icons.Rounded.CheckCircle
-                                    isConfigured -> Icons.Rounded.VpnKey
-                                    else -> Icons.Rounded.Key
-                                },
-                                contentDescription = null,
-                                tint = statusColor,
-                                modifier = Modifier.size(18.dp)
-                            )
-                        }
+        Column(modifier = Modifier.padding(16.dp)) {
+            Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Box(modifier = Modifier.size(36.dp).clip(CircleShape).background(statusColor.copy(alpha = 0.1f)), contentAlignment = Alignment.Center) {
+                        if (isValidating) CircularProgressIndicator(modifier = Modifier.size(18.dp), color = BalanceGold, strokeWidth = 2.dp)
+                        else Icon(when { isValid -> Icons.Rounded.CheckCircle; isConfigured -> Icons.Rounded.VpnKey; else -> Icons.Rounded.Key }, contentDescription = null, tint = statusColor, modifier = Modifier.size(18.dp))
                     }
-
                     Column {
-                        Text(
-                            text = service.displayName,
-                            fontWeight = FontWeight.SemiBold,
-                            fontSize = 15.sp,
-                            color = if (isEnabled) MilkyWhiteText else MutedGrayDark
-                        )
+                        Text(service.displayName, fontWeight = FontWeight.SemiBold, fontSize = 15.sp, color = if (isEnabled) MilkyWhiteText else MutedGrayDark)
                         if (isConfigured && !isValidating) {
                             Text(
-                                text = when {
-                                    isValid -> "Verified • ${formatTimestamp(lastValidated)}"
-                                    validationError != null -> validationError
-                                    else -> config?.maskedKey ?: "••••••••"
-                                },
-                                fontSize = 11.sp,
-                                color = when {
-                                    isValid -> Color(0xFF4CAF50)
-                                    validationError != null -> Color(0xFFEF5350)
-                                    else -> MutedGrayDark
-                                },
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis
+                                when { isValid -> "Verified • ${formatTimestamp(lastValidated)}"; validationError != null -> validationError; else -> config?.maskedKey ?: "••••••••" },
+                                fontSize = 11.sp, color = when { isValid -> SuccessGreen; validationError != null -> ErrorRed; else -> MutedGrayDark }, maxLines = 1, overflow = TextOverflow.Ellipsis
                             )
                         }
                     }
                 }
-
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
-                    if (isConfigured) {
-                        IconButton(
-                            onClick = { showDeleteDialog = true },
-                            modifier = Modifier.size(32.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Rounded.DeleteOutline,
-                                contentDescription = "Delete key",
-                                tint = MutedGrayDark,
-                                modifier = Modifier.size(16.dp)
-                            )
-                        }
-                    }
-
-                    Switch(
-                        checked = isEnabled,
-                        onCheckedChange = { onToggle(it) },
-                        modifier = Modifier.padding(start = 4.dp),
-                        colors = SwitchDefaults.colors(
-                            checkedThumbColor = ShadowBlack,
-                            checkedTrackColor = BalanceGold,
-                            uncheckedThumbColor = MilkyWhiteText,
-                            uncheckedTrackColor = BorderGrayDark
-                        )
-                    )
+                Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                    if (isConfigured) IconButton(onClick = { showDeleteDialog = true }, modifier = Modifier.size(32.dp)) { Icon(Icons.Rounded.DeleteOutline, "Delete key", tint = MutedGrayDark, modifier = Modifier.size(16.dp)) }
+                    Switch(isEnabled, { onToggle(it) }, Modifier.padding(start = 4.dp), colors = SwitchDefaults.colors(checkedThumbColor = ShadowBlack, checkedTrackColor = BalanceGold, uncheckedThumbColor = MilkyWhiteText, uncheckedTrackColor = BorderGrayDark))
                 }
             }
-
             if (isEnabled) {
-                Spacer(modifier = Modifier.height(12.dp))
-
+                Spacer(Modifier.height(12.dp))
                 OutlinedTextField(
-                    value = keyInput,
-                    onValueChange = {
-                        keyInput = it
-                        onClearError()
-                    },
-                    modifier = Modifier.fillMaxWidth(),
-                    placeholder = {
-                        Text(
-                            text = "Enter ${service.displayName} API key...",
-                            color = MutedGrayDark.copy(alpha = 0.5f),
-                            fontSize = 13.sp
-                        )
-                    },
-                    visualTransformation = if (isKeyVisible) {
-                        VisualTransformation.None
-                    } else {
-                        PasswordVisualTransformation()
-                    },
+                    keyInput, { keyInput = it; onClearError() }, Modifier.fillMaxWidth(),
+                    placeholder = { Text("Enter ${service.displayName} API key...", color = MutedGrayDark.copy(alpha = 0.5f), fontSize = 13.sp) },
+                    visualTransformation = if (isKeyVisible) VisualTransformation.None else PasswordVisualTransformation(),
                     trailingIcon = {
                         Row {
-                            IconButton(
-                                onClick = { isKeyVisible = !isKeyVisible },
-                                modifier = Modifier.size(28.dp)
-                            ) {
-                                Icon(
-                                    imageVector = if (isKeyVisible) Icons.Rounded.VisibilityOff
-                                    else Icons.Rounded.Visibility,
-                                    contentDescription = "Toggle visibility",
-                                    tint = MutedGrayDark,
-                                    modifier = Modifier.size(16.dp)
-                                )
-                            }
-                            if (keyInput.isNotBlank()) {
-                                IconButton(
-                                    onClick = {
-                                        keyInput = ""
-                                        onClearError()
-                                    },
-                                    modifier = Modifier.size(28.dp)
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Rounded.Clear,
-                                        contentDescription = "Clear",
-                                        tint = MutedGrayDark,
-                                        modifier = Modifier.size(14.dp)
-                                    )
-                                }
-                            }
+                            IconButton({ isKeyVisible = !isKeyVisible }, Modifier.size(28.dp)) { Icon(if (isKeyVisible) Icons.Rounded.VisibilityOff else Icons.Rounded.Visibility, "Toggle visibility", tint = MutedGrayDark, modifier = Modifier.size(16.dp)) }
+                            if (keyInput.isNotBlank()) IconButton({ keyInput = ""; onClearError() }, Modifier.size(28.dp)) { Icon(Icons.Rounded.Clear, "Clear", tint = MutedGrayDark, modifier = Modifier.size(14.dp)) }
                         }
                     },
                     shape = RoundedCornerShape(10.dp),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = BalanceGold,
-                        unfocusedBorderColor = BorderGrayDark,
-                        focusedContainerColor = ShadowBlack.copy(alpha = 0.3f),
-                        unfocusedContainerColor = ShadowBlack.copy(alpha = 0.3f),
-                        cursorColor = BalanceGold,
-                        focusedTextColor = MilkyWhiteText,
-                        unfocusedTextColor = MilkyWhiteText
-                    ),
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions(
-                        keyboardType = KeyboardType.Password,
-                        imeAction = ImeAction.Done
-                    ),
-                    keyboardActions = KeyboardActions(
-                        onDone = { focusManager.clearFocus() }
-                    ),
-                    textStyle = TextStyle(
-                        fontFamily = FontFamily.Monospace,
-                        fontSize = 13.sp
-                    )
+                    colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = BalanceGold, unfocusedBorderColor = BorderGrayDark, focusedContainerColor = ShadowBlack.copy(alpha = 0.3f), unfocusedContainerColor = ShadowBlack.copy(alpha = 0.3f), cursorColor = BalanceGold, focusedTextColor = MilkyWhiteText, unfocusedTextColor = MilkyWhiteText),
+                    singleLine = true, keyboardOptions = KeyboardOptions(KeyboardType.Password, ImeAction.Done), keyboardActions = KeyboardActions { focusManager.clearFocus() },
+                    textStyle = TextStyle(fontFamily = FontFamily.Monospace, fontSize = 13.sp)
                 )
-
-                Spacer(modifier = Modifier.height(12.dp))
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    OutlinedButton(
-                        onClick = {
-                            val url = service.keyUrl
-                            val intent = android.content.Intent(
-                                android.content.Intent.ACTION_VIEW,
-                                android.net.Uri.parse(url)
-                            )
-                            context.startActivity(intent)
-                        },
-                        modifier = Modifier.weight(0.4f),
-                        shape = RoundedCornerShape(10.dp),
-                        border = BorderStroke(1.dp, BorderGrayDark),
-                        colors = ButtonDefaults.outlinedButtonColors(
-                            contentColor = MutedGrayDark
-                        )
-                    ) {
-                        Icon(
-                            imageVector = Icons.Outlined.OpenInNew,
-                            contentDescription = null,
-                            modifier = Modifier.size(14.dp)
-                        )
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text(
-                            text = "Get Key",
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Medium
-                        )
-                    }
-
-                    Button(
-                        onClick = {
-                            if (keyInput.isNotBlank()) {
-                                onKeyChange(keyInput)
-                            }
-                            onValidate()
-                        },
-                        modifier = Modifier.weight(0.6f),
-                        enabled = keyInput.isNotBlank() && !isValidating,
-                        shape = RoundedCornerShape(10.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = if (isValid) Color(0xFF4CAF50) else BalanceGold,
-                            contentColor = ShadowBlack,
-                            disabledContainerColor = BorderGrayDark,
-                            disabledContentColor = MutedGrayDark
-                        )
-                    ) {
-                        if (isValidating) {
-                            CircularProgressIndicator(
-                                modifier = Modifier.size(14.dp),
-                                color = ShadowBlack,
-                                strokeWidth = 2.dp
-                            )
-                        } else {
-                            Icon(
-                                imageVector = if (isValid) Icons.Rounded.Check else Icons.Rounded.Bolt,
-                                contentDescription = null,
-                                modifier = Modifier.size(14.dp)
-                            )
-                        }
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Text(
-                            text = when {
-                                isValidating -> "Validating..."
-                                isValid -> "Verified"
-                                isConfigured -> "Revalidate"
-                                else -> "Save & Validate"
-                            },
-                            fontSize = 13.sp,
-                            fontWeight = FontWeight.Bold
-                        )
+                Spacer(Modifier.height(12.dp))
+                Row(Modifier.fillMaxWidth(), Arrangement.spacedBy(8.dp)) {
+                    OutlinedButton({ context.startActivity(android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(service.keyUrl))) }, Modifier.weight(0.4f), shape = RoundedCornerShape(10.dp), border = BorderStroke(1.dp, BorderGrayDark), colors = ButtonDefaults.outlinedButtonColors(contentColor = MutedGrayDark)) { Icon(Icons.Outlined.OpenInNew, null, Modifier.size(14.dp)); Spacer(Modifier.width(4.dp)); Text("Get Key", fontSize = 12.sp, fontWeight = FontWeight.Medium) }
+                    Button({ if (keyInput.isNotBlank()) onKeyChange(keyInput); onValidate() }, Modifier.weight(0.6f), enabled = keyInput.isNotBlank() && !isValidating, shape = RoundedCornerShape(10.dp), colors = ButtonDefaults.buttonColors(containerColor = if (isValid) SuccessGreen else BalanceGold, contentColor = ShadowBlack, disabledContainerColor = BorderGrayDark, disabledContentColor = MutedGrayDark)) {
+                        if (isValidating) CircularProgressIndicator(Modifier.size(14.dp), color = ShadowBlack, strokeWidth = 2.dp)
+                        else Icon(if (isValid) Icons.Rounded.Check else Icons.Rounded.Bolt, null, Modifier.size(14.dp))
+                        Spacer(Modifier.width(6.dp))
+                        Text(when { isValidating -> "Validating..."; isValid -> "Verified"; isConfigured -> "Revalidate"; else -> "Save & Validate" }, fontSize = 13.sp, fontWeight = FontWeight.Bold)
                     }
                 }
             }
         }
     }
-
-    if (showDeleteDialog) {
-        AlertDialog(
-            onDismissRequest = { showDeleteDialog = false },
-            containerColor = ShadowBlackCard,
-            titleContentColor = MilkyWhiteText,
-            textContentColor = MutedGrayDark,
-            icon = {
-                Icon(
-                    imageVector = Icons.Rounded.Warning,
-                    contentDescription = null,
-                    tint = Color(0xFFEF5350),
-                    modifier = Modifier.size(28.dp)
-                )
-            },
-            title = { Text("Remove API Key?") },
-            text = {
-                Text("This will delete your ${service.displayName} key. Connected features will stop working.")
-            },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        onDelete()
-                        keyInput = ""
-                        showDeleteDialog = false
-                    },
-                    colors = ButtonDefaults.textButtonColors(contentColor = Color(0xFFEF5350))
-                ) {
-                    Text("Delete", fontWeight = FontWeight.Bold)
-                }
-            },
-            dismissButton = {
-                TextButton(
-                    onClick = { showDeleteDialog = false },
-                    colors = ButtonDefaults.textButtonColors(contentColor = MutedGrayDark)
-                ) {
-                    Text("Cancel")
-                }
-            },
-            shape = RoundedCornerShape(16.dp)
-        )
-    }
+    if (showDeleteDialog) AlertDialog({ showDeleteDialog = false }, containerColor = ShadowBlackCard, titleContentColor = MilkyWhiteText, textContentColor = MutedGrayDark, icon = { Icon(Icons.Rounded.Warning, null, tint = ErrorRed, modifier = Modifier.size(28.dp)) }, title = { Text("Remove API Key?") }, text = { Text("This will delete your ${service.displayName} key. Connected features will stop working.") }, confirmButton = { TextButton({ onDelete(); keyInput = ""; showDeleteDialog = false }, colors = ButtonDefaults.textButtonColors(contentColor = ErrorRed)) { Text("Delete", fontWeight = FontWeight.Bold) } }, dismissButton = { TextButton({ showDeleteDialog = false }, colors = ButtonDefaults.textButtonColors(contentColor = MutedGrayDark)) { Text("Cancel") } }, shape = RoundedCornerShape(16.dp))
 }
 
 private fun formatTimestamp(timestamp: Long?): String {
