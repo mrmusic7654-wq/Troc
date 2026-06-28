@@ -16,7 +16,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.focus.FocusRequester
@@ -24,7 +23,6 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -93,14 +91,11 @@ fun SessionDrawer(
         Column(
             modifier = Modifier.fillMaxSize()
         ) {
-            // Header
             DrawerHeader(
                 isGenerating = isGenerating,
-                activeKeyCount = activeKeyCount,
-                onCloseDrawer = onCloseDrawer
+                activeKeyCount = activeKeyCount
             )
 
-            // Quick Actions
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -177,7 +172,6 @@ fun SessionDrawer(
                 }
             }
 
-            // Search
             if (sessions.isNotEmpty()) {
                 OutlinedTextField(
                     value = searchQuery,
@@ -229,7 +223,6 @@ fun SessionDrawer(
                     textStyle = MaterialTheme.typography.bodySmall
                 )
 
-                // Sort toggle
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -275,13 +268,10 @@ fun SessionDrawer(
                 }
 
                 Spacer(modifier = Modifier.height(2.dp))
-
                 DrawerDivider()
-
                 Spacer(modifier = Modifier.height(4.dp))
             }
 
-            // Sessions List
             Box(modifier = Modifier.weight(1f)) {
                 if (filteredSessions.isEmpty() && sessions.isNotEmpty()) {
                     EmptySearchResult(
@@ -317,10 +307,7 @@ fun SessionDrawer(
                                 },
                                 onDelete = { onSessionDelete(session.id) },
                                 onPin = {
-                                    onSessionRename(
-                                        session.id,
-                                        session.title
-                                    )
+                                    onSessionRename(session.id, session.title)
                                 }
                             )
                         }
@@ -328,7 +315,6 @@ fun SessionDrawer(
                 }
             }
 
-            // Workspace Section
             DrawerDivider(label = "Workspaces")
 
             Spacer(modifier = Modifier.height(4.dp))
@@ -347,10 +333,8 @@ fun SessionDrawer(
             }
 
             Spacer(modifier = Modifier.height(4.dp))
-
             DrawerDivider()
 
-            // Clear All Button
             if (sessions.isNotEmpty()) {
                 Row(
                     modifier = Modifier
@@ -375,7 +359,6 @@ fun SessionDrawer(
                 }
             }
 
-            // Footer
             Spacer(modifier = Modifier.height(8.dp))
 
             Row(
@@ -399,7 +382,6 @@ fun SessionDrawer(
         }
     }
 
-    // Clear All Confirmation Dialog
     if (showClearDialog) {
         AlertDialog(
             onDismissRequest = { showClearDialog = false },
@@ -427,9 +409,7 @@ fun SessionDrawer(
                         showClearDialog = false
                         onCloseDrawer()
                     },
-                    colors = ButtonDefaults.textButtonColors(
-                        contentColor = ErrorRed
-                    )
+                    colors = ButtonDefaults.textButtonColors(contentColor = ErrorRed)
                 ) {
                     Text("Delete All", fontWeight = FontWeight.Bold)
                 }
@@ -437,9 +417,7 @@ fun SessionDrawer(
             dismissButton = {
                 TextButton(
                     onClick = { showClearDialog = false },
-                    colors = ButtonDefaults.textButtonColors(
-                        contentColor = MutedGrayDark
-                    )
+                    colors = ButtonDefaults.textButtonColors(contentColor = MutedGrayDark)
                 ) {
                     Text("Cancel")
                 }
@@ -465,9 +443,7 @@ private fun SessionDrawerItem(
     val focusRequester = remember { FocusRequester() }
 
     LaunchedEffect(isRenaming) {
-        if (isRenaming) {
-            focusRequester.requestFocus()
-        }
+        if (isRenaming) focusRequester.requestFocus()
     }
 
     Card(
@@ -484,17 +460,12 @@ private fun SessionDrawerItem(
         ),
         border = when {
             isSelected -> BorderStroke(1.dp, BalanceGold.copy(alpha = 0.3f))
-            session.isPinned && !isSelected -> BorderStroke(
-                0.5.dp,
-                BalanceGold.copy(alpha = 0.1f)
-            )
+            session.isPinned && !isSelected -> BorderStroke(0.5.dp, BalanceGold.copy(alpha = 0.1f))
             else -> null
         },
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
-        Column(
-            modifier = Modifier.padding(horizontal = 10.dp, vertical = 8.dp)
-        ) {
+        Column(modifier = Modifier.padding(horizontal = 10.dp, vertical = 8.dp)) {
             if (isRenaming) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -509,9 +480,7 @@ private fun SessionDrawerItem(
                             .focusRequester(focusRequester)
                             .onFocusChanged { focusState ->
                                 if (!focusState.isFocused && isRenaming) {
-                                    if (renameText.isNotBlank()) {
-                                        onRename(renameText)
-                                    }
+                                    if (renameText.isNotBlank()) onRename(renameText)
                                     isRenaming = false
                                 }
                             },
@@ -523,12 +492,9 @@ private fun SessionDrawerItem(
                         cursorBrush = SolidColor(BalanceGold),
                         singleLine = true
                     )
-
                     IconButton(
                         onClick = {
-                            if (renameText.isNotBlank()) {
-                                onRename(renameText)
-                            }
+                            if (renameText.isNotBlank()) onRename(renameText)
                             isRenaming = false
                         },
                         modifier = Modifier.size(24.dp)
@@ -540,12 +506,8 @@ private fun SessionDrawerItem(
                             modifier = Modifier.size(14.dp)
                         )
                     }
-
                     IconButton(
-                        onClick = {
-                            renameText = session.title
-                            isRenaming = false
-                        },
+                        onClick = { renameText = session.title; isRenaming = false },
                         modifier = Modifier.size(24.dp)
                     ) {
                         Icon(
@@ -562,7 +524,6 @@ private fun SessionDrawerItem(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    // Pin indicator
                     if (session.isPinned) {
                         Icon(
                             Icons.Rounded.PushPin,
@@ -571,8 +532,6 @@ private fun SessionDrawerItem(
                             modifier = Modifier.size(12.dp)
                         )
                     }
-
-                    // Color label
                     if (session.colorLabel.isNotBlank()) {
                         Box(
                             modifier = Modifier
@@ -590,7 +549,6 @@ private fun SessionDrawerItem(
                                 )
                         )
                     }
-
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
                             text = session.displayTitle,
@@ -600,7 +558,6 @@ private fun SessionDrawerItem(
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis
                         )
-
                         if (session.hasLastMessage) {
                             Text(
                                 text = session.lastMessageSnippet,
@@ -610,7 +567,6 @@ private fun SessionDrawerItem(
                                 overflow = TextOverflow.Ellipsis
                             )
                         }
-
                         Row(
                             horizontalArrangement = Arrangement.spacedBy(8.dp),
                             verticalAlignment = Alignment.CenterVertically
@@ -637,8 +593,6 @@ private fun SessionDrawerItem(
                             }
                         }
                     }
-
-                    // More options
                     Box {
                         IconButton(
                             onClick = { showMenu = true },
@@ -651,7 +605,6 @@ private fun SessionDrawerItem(
                                 modifier = Modifier.size(16.dp)
                             )
                         }
-
                         DropdownMenu(
                             expanded = showMenu,
                             onDismissRequest = { showMenu = false },
@@ -665,11 +618,7 @@ private fun SessionDrawerItem(
                                     showMenu = false
                                 },
                                 leadingIcon = {
-                                    Icon(
-                                        Icons.Rounded.Edit,
-                                        contentDescription = null,
-                                        modifier = Modifier.size(16.dp)
-                                    )
+                                    Icon(Icons.Rounded.Edit, contentDescription = null, modifier = Modifier.size(16.dp))
                                 }
                             )
                             DropdownMenuItem(
@@ -679,10 +628,7 @@ private fun SessionDrawerItem(
                                         fontSize = 13.sp
                                     )
                                 },
-                                onClick = {
-                                    onPin()
-                                    showMenu = false
-                                },
+                                onClick = { onPin(); showMenu = false },
                                 leadingIcon = {
                                     Icon(
                                         if (session.isPinned) Icons.Rounded.PushPin else Icons.Rounded.PushPin,
@@ -698,10 +644,7 @@ private fun SessionDrawerItem(
                                         fontSize = 13.sp
                                     )
                                 },
-                                onClick = {
-                                    onPin()
-                                    showMenu = false
-                                },
+                                onClick = { onPin(); showMenu = false },
                                 leadingIcon = {
                                     Icon(
                                         if (session.isArchived) Icons.Rounded.Unarchive else Icons.Rounded.Archive,
@@ -713,16 +656,9 @@ private fun SessionDrawerItem(
                             HorizontalDivider(color = BorderGrayDark)
                             DropdownMenuItem(
                                 text = {
-                                    Text(
-                                        "Delete",
-                                        fontSize = 13.sp,
-                                        color = ErrorRed
-                                    )
+                                    Text("Delete", fontSize = 13.sp, color = ErrorRed)
                                 },
-                                onClick = {
-                                    onDelete()
-                                    showMenu = false
-                                },
+                                onClick = { onDelete(); showMenu = false },
                                 leadingIcon = {
                                     Icon(
                                         Icons.Rounded.Delete,
@@ -750,19 +686,9 @@ private fun WorkspaceDrawerItem(
 ) {
     val isLocked = workspace.isPremium && !isPremiumUnlocked
 
-    val animatedScale by animateFloatAsState(
-        targetValue = if (isSelected) 1.02f else 1f,
-        animationSpec = spring(
-            dampingRatio = Spring.DampingRatioMediumBouncy,
-            stiffness = Spring.StiffnessLow
-        ),
-        label = "workspaceScale"
-    )
-
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .scale(animatedScale)
             .clickable(enabled = !isLocked) { onClick() },
         shape = RoundedCornerShape(10.dp),
         colors = CardDefaults.cardColors(
@@ -786,11 +712,8 @@ private fun WorkspaceDrawerItem(
                     isLocked -> MutedGrayDark.copy(alpha = 0.3f)
                     else -> MutedGrayDark
                 },
-                modifier = Modifier
-                    .size(18.dp)
-                    .alpha(if (isLocked) 0.3f else 1f)
+                modifier = Modifier.size(18.dp)
             )
-
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = workspace.label,
@@ -808,7 +731,6 @@ private fun WorkspaceDrawerItem(
                     color = if (isLocked) BalanceGold.copy(alpha = 0.4f) else MutedGrayDark
                 )
             }
-
             if (isLocked) {
                 Icon(
                     Icons.Rounded.Lock,
@@ -822,9 +744,7 @@ private fun WorkspaceDrawerItem(
 }
 
 @Composable
-private fun EmptySessionsPlaceholder(
-    modifier: Modifier = Modifier
-) {
+private fun EmptySessionsPlaceholder(modifier: Modifier = Modifier) {
     Column(
         modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -856,10 +776,7 @@ private fun EmptySessionsPlaceholder(
 }
 
 @Composable
-private fun EmptySearchResult(
-    query: String,
-    modifier: Modifier = Modifier
-) {
+private fun EmptySearchResult(query: String, modifier: Modifier = Modifier) {
     Column(
         modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -881,10 +798,5 @@ private fun EmptySearchResult(
     }
 }
 
-private enum class FilterMode {
-    ALL, PINNED, ACTIVE, ARCHIVED
-}
-
-private enum class SortMode {
-    UPDATED, CREATED, MESSAGES, TITLE
-}
+private enum class FilterMode { ALL, PINNED, ACTIVE, ARCHIVED }
+private enum class SortMode { UPDATED, CREATED, MESSAGES, TITLE }
