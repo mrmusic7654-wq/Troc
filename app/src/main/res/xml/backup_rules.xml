@@ -1,3 +1,7 @@
 <!-- app/src/main/res/xml/backup_rules.xml -->
 <?xml version="1.0" encoding="utf-8"?>
-<full-backup-content/>
+<full-backup-content>
+    <include domain="database" path="troc_agent_database" />
+    <include domain="sharedpref" path="troc_agent_prefs.xml" />
+    <exclude domain="sharedpref" path="device.xml" />
+</full-backup-content>
