@@ -1,3 +1,4 @@
+// app/src/main/java/com/example/MainActivity.kt
 package com.example
 
 import android.os.Bundle
@@ -17,6 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.data.api.RetrofitClient
 import com.example.data.database.AppDatabase
 import com.example.data.repository.ApiKeyRepository
@@ -75,14 +77,9 @@ private fun MainApp(
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
 
-    val isGenerating by chatViewModel.isGenerating.collectAsState()
-    val activeKeyCount by remember {
-        derivedStateOf {
-            settingsViewModel.apiKeys.collectAsState().value.count {
-                it.value.isEnabled && it.value.apiKey.isNotBlank()
-            }
-        }
-    }
+    val isGenerating by chatViewModel.isGenerating.collectAsStateWithLifecycle()
+    val apiKeys by settingsViewModel.apiKeys.collectAsStateWithLifecycle()
+    val activeKeyCount = apiKeys.count { it.value.isEnabled && it.value.apiKey.isNotBlank() }
 
     ModalNavigationDrawer(
         drawerState = drawerState,
