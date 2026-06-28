@@ -685,7 +685,7 @@ private fun SessionDrawerItem(
                                 },
                                 leadingIcon = {
                                     Icon(
-                                        if (session.isPinned) Icons.Rounded.PushPin else Icons.Rounded.PushPinOutlined,
+                                        if (session.isPinned) Icons.Rounded.PushPin else Icons.Rounded.PushPin,
                                         contentDescription = null,
                                         modifier = Modifier.size(16.dp)
                                     )
