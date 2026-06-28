@@ -1,4 +1,4 @@
-name: Build APK
+name: Build Troc APK
 
 on:
   push:
@@ -60,33 +60,14 @@ jobs:
           }
           EOF
 
-      - name: Debug - Show raw bytes of XML files
+      - name: Strip BOM from XML files
         run: |
-          echo "=== ic_launcher_foreground.xml ==="
-          head -c 100 app/src/main/res/drawable/ic_launcher_foreground.xml | xxd
-          echo "=== splash_background.xml ==="
-          head -c 100 app/src/main/res/drawable/splash_background.xml | xxd
-          echo "=== backup_rules.xml ==="
-          head -c 100 app/src/main/res/xml/backup_rules.xml | xxd
-          echo "=== data_extraction_rules.xml ==="
-          head -c 100 app/src/main/res/xml/data_extraction_rules.xml | xxd
-
-      - name: Force rewrite XML files without BOM
-        run: |
-          for f in $(find app/src/main/res -name "*.xml" -type f); do
-            echo "Fixing: $f"
-            tail -c +4 "$f" > "$f.tmp" 2>/dev/null
-            if [ -s "$f.tmp" ]; then
-              echo '<?xml version="1.0" encoding="utf-8"?>' > "$f"
-              cat "$f.tmp" >> "$f"
-              rm "$f.tmp"
+          for f in $(find . -name "*.xml" -type f); do
+            if head -c 3 "$f" | grep -q $'\xEF\xBB\xBF'; then
+              echo "Stripping BOM from: $f"
+              tail -c +4 "$f" > "$f.tmp" && mv "$f.tmp" "$f"
             fi
           done
-
-      - name: Debug - Verify fix
-        run: |
-          echo "=== ic_launcher_foreground.xml ==="
-          head -c 100 app/src/main/res/drawable/ic_launcher_foreground.xml | xxd
 
       - name: Fix GEMINI_API_KEY reference
         run: sed -i 's/BuildConfig.GEMINI_API_KEY/"dummy_key"/g' app/src/main/java/com/example/ui/viewmodel/ChatViewModel.kt
