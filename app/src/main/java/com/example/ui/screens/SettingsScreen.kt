@@ -1,6 +1,9 @@
 // app/src/main/java/com/example/ui/screens/SettingsScreen.kt
 package com.example.ui.screens
 
+import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.*
