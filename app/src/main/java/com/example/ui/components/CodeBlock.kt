@@ -1,6 +1,8 @@
 // app/src/main/java/com/example/ui/components/CodeBlock.kt
 package com.example.ui.components
 
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.ui.draw.scale
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
