@@ -76,7 +76,7 @@ class ApiKeyRepository(
     private suspend fun validateGeminiKey(key: String): Boolean {
         return try {
             val response = geminiService.generateContent(
-                key,
+                key,"gemini-2.0-flash", 
                 GenerateContentRequest(
                     contents = listOf(
                         Content(
