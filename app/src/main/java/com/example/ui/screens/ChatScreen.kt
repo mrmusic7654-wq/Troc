@@ -1,6 +1,7 @@
 // app/src/main/java/com/example/ui/screens/ChatScreen.kt
 package com.example.ui.screens
 
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.*
