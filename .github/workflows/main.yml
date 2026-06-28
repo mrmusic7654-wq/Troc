@@ -8,7 +8,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -60,15 +60,12 @@ jobs:
           }
           EOF
 
-      - name: Fix GEMINI_API_KEY reference
+      - name: Create debug keystore
         run: |
-          sed -i 's/BuildConfig.GEMINI_API_KEY/"dummy_key"/g' app/src/main/java/com/example/ui/viewmodel/ChatViewModel.kt
+          keytool -genkey -v -keystore debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US" 2>/dev/null || true
 
-      - name: Fix signing config
-        run: |
-          sed -i '/signingConfigs {/,/^  }/d' app/build.gradle.kts
-          sed -i 's/signingConfig = signingConfigs.getByName("release")//' app/build.gradle.kts
-          sed -i 's/signingConfig = signingConfigs.getByName("debugConfig")//' app/build.gradle.kts
+      - name: Fix GEMINI_API_KEY reference
+        run: sed -i 's/BuildConfig.GEMINI_API_KEY/"dummy_key"/g' app/src/main/java/com/example/ui/viewmodel/ChatViewModel.kt
 
       - name: Build Debug APK
         run: gradle assembleDebug
