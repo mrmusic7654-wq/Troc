@@ -169,7 +169,7 @@ fun AgentOrchestratorPanel(
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         Icon(
-                            Icons.Rounded.Target,
+                            Icons.Rounded.GpsFixed,
                             contentDescription = null,
                             tint = BalanceGold,
                             modifier = Modifier.size(16.dp)
