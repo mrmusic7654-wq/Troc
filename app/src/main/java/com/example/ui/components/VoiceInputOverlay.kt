@@ -75,7 +75,7 @@ fun VoiceInputOverlay(
 
     var speechRecognizer by remember { mutableStateOf<SpeechRecognizer?>(null) }
 
-    val startListening = {
+    fun startListening() {
         if (!permissionGranted) {
             permissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
             return
@@ -121,8 +121,9 @@ fun VoiceInputOverlay(
         recognizer.startListening(intent)
     }
 
-    val stopListening = { speechRecognizer?.stopListening(); isListening = false }
-    val togglePause = {
+    fun stopListening() { speechRecognizer?.stopListening(); isListening = false }
+
+    fun togglePause() {
         if (isPaused) {
             speechRecognizer?.startListening(Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
                 putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
