@@ -78,7 +78,7 @@ fun VoiceInputOverlay(
     val startListening = {
         if (!permissionGranted) {
             permissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
-            return@remember
+            return
         }
         val recognizer = SpeechRecognizer.createSpeechRecognizer(context)
         speechRecognizer = recognizer
