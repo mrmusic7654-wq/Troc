@@ -65,6 +65,13 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        if (isFinishing) {
+            AppDatabase.destroyInstance()
+        }
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -91,9 +98,7 @@ private fun MainApp(
                 drawerContainerColor = ShadowBlack,
                 drawerTonalElevation = 8.dp
             ) {
-                Column(
-                    modifier = Modifier.fillMaxSize()
-                ) {
+                Column(modifier = Modifier.fillMaxSize()) {
                     DrawerHeader(
                         isGenerating = isGenerating,
                         activeKeyCount = activeKeyCount
