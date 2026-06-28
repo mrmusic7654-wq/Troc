@@ -1,12 +1,12 @@
 // app/src/main/java/com/example/ui/theme/Theme.kt
 package com.example.ui.theme
 
-import androidx.compose.runtime.staticCompositionLocalOf
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.platform.LocalContext
 
 private val DarkColorScheme = darkColorScheme(
@@ -72,11 +72,6 @@ private val LightColorScheme = lightColorScheme(
 )
 
 private val LocalCustomColors = staticCompositionLocalOf { DarkColorScheme }
-
-object TrocTheme {
-    val colorScheme: ColorScheme
-        @Composable get() = LocalCustomColors.current
-}
 
 @Composable
 fun MyApplicationTheme(
