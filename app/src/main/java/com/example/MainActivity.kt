@@ -1,4 +1,3 @@
-// app/src/main/java/com/example/MainActivity.kt
 package com.example
 
 import android.os.Bundle
@@ -7,11 +6,18 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.compose.animation.*
-import androidx.compose.foundation.background
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.example.data.api.RetrofitClient
 import com.example.data.database.AppDatabase
 import com.example.data.repository.ApiKeyRepository
 import com.example.data.repository.ChatRepository
@@ -26,7 +32,6 @@ import com.example.ui.viewmodel.ChatViewModel
 import com.example.ui.viewmodel.ChatViewModelFactory
 import com.example.ui.viewmodel.SettingsViewModel
 import com.example.ui.viewmodel.SettingsViewModelFactory
-import com.example.data.api.RetrofitClient
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
@@ -71,9 +76,11 @@ private fun MainApp(
     val scope = rememberCoroutineScope()
 
     val isGenerating by chatViewModel.isGenerating.collectAsState()
-    val activeKeyCount by settingsViewModel.apiKeys.collectAsState().let { state ->
-        remember(state.value) {
-            derivedStateOf { state.value.count { it.value.isEnabled && it.value.apiKey.isNotBlank() } }
+    val activeKeyCount by remember {
+        derivedStateOf {
+            settingsViewModel.apiKeys.collectAsState().value.count {
+                it.value.isEnabled && it.value.apiKey.isNotBlank()
+            }
         }
     }
 
@@ -209,10 +216,10 @@ private fun ComingSoonScreen(
 ) {
     Box(
         modifier = Modifier.fillMaxSize(),
-        contentAlignment = androidx.compose.ui.Alignment.Center
+        contentAlignment = Alignment.Center
     ) {
         Column(
-            horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally,
+            horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Icon(
