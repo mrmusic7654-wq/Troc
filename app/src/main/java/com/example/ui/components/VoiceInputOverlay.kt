@@ -727,8 +727,3 @@ private fun PermissionRequestContent(
         }
     }
 }
-
-// Import required for Canvas drawing
-import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
