@@ -1,11 +1,6 @@
 // app/src/main/java/com/example/ui/components/VoiceInputOverlay.kt
 package com.example.ui.components
 
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -17,10 +12,10 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -33,6 +28,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
@@ -78,57 +74,27 @@ fun VoiceInputOverlay(
         }
     }
 
-    // Pulse animation for the listening indicator
     val infiniteTransition = rememberInfiniteTransition(label = "pulse_waveform")
 
     val pulseScale1 by infiniteTransition.animateFloat(
-        initialValue = 0.9f,
-        targetValue = 1.4f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(1200, easing = FastOutSlowInEasing),
-            repeatMode = RepeatMode.Reverse
-        ),
+        initialValue = 0.9f, targetValue = 1.4f,
+        animationSpec = infiniteRepeatable(tween(1200, easing = FastOutSlowInEasing), RepeatMode.Reverse),
         label = "pulse1"
     )
-
     val pulseScale2 by infiniteTransition.animateFloat(
-        initialValue = 0.9f,
-        targetValue = 1.7f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(900, easing = FastOutSlowInEasing),
-            repeatMode = RepeatMode.Reverse
-        ),
+        initialValue = 0.9f, targetValue = 1.7f,
+        animationSpec = infiniteRepeatable(tween(900, easing = FastOutSlowInEasing), RepeatMode.Reverse),
         label = "pulse2"
     )
-
     val pulseScale3 by infiniteTransition.animateFloat(
-        initialValue = 0.9f,
-        targetValue = 2.0f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(700, easing = FastOutSlowInEasing),
-            repeatMode = RepeatMode.Reverse
-        ),
+        initialValue = 0.9f, targetValue = 2.0f,
+        animationSpec = infiniteRepeatable(tween(700, easing = FastOutSlowInEasing), RepeatMode.Reverse),
         label = "pulse3"
     )
-
     val glowAlpha by infiniteTransition.animateFloat(
-        initialValue = 0.1f,
-        targetValue = 0.35f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(1500, easing = FastOutSlowInEasing),
-            repeatMode = RepeatMode.Reverse
-        ),
+        initialValue = 0.1f, targetValue = 0.35f,
+        animationSpec = infiniteRepeatable(tween(1500, easing = FastOutSlowInEasing), RepeatMode.Reverse),
         label = "glow"
-    )
-
-    val shimmerRotation by infiniteTransition.animateFloat(
-        initialValue = 0f,
-        targetValue = 360f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(2000, easing = LinearEasing),
-            repeatMode = RepeatMode.Restart
-        ),
-        label = "shimmer"
     )
 
     var speechRecognizer by remember { mutableStateOf<SpeechRecognizer?>(null) }
@@ -248,9 +214,7 @@ fun VoiceInputOverlay(
     }
 
     LaunchedEffect(permissionGranted) {
-        if (permissionGranted) {
-            startListening()
-        }
+        if (permissionGranted) startListening()
     }
 
     DisposableEffect(Unit) {
@@ -260,7 +224,6 @@ fun VoiceInputOverlay(
         }
     }
 
-    // Full screen overlay
     Box(
         modifier = modifier
             .fillMaxSize()
@@ -275,21 +238,16 @@ fun VoiceInputOverlay(
                 .wrapContentHeight()
                 .clickable(enabled = false, onClick = {})
                 .testTag("voice_overlay_card"),
-            colors = CardDefaults.cardColors(
-                containerColor = ShadowBlackCard
-            ),
+            colors = CardDefaults.cardColors(containerColor = ShadowBlackCard),
             shape = RoundedCornerShape(28.dp),
             border = BorderStroke(0.5.dp, BalanceGold.copy(alpha = 0.2f)),
             elevation = CardDefaults.cardElevation(defaultElevation = 16.dp)
         ) {
             Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(28.dp),
+                modifier = Modifier.fillMaxWidth().padding(28.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
-                // Header
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -299,11 +257,7 @@ fun VoiceInputOverlay(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        YinYangLogo(
-                            size = 24.dp,
-                            isSpinning = isListening,
-                            glowEnabled = true
-                        )
+                        YinYangLogo(size = 24.dp, isSpinning = isListening, glowEnabled = true)
                         Text(
                             text = "Vocal Harmony",
                             fontWeight = FontWeight.Bold,
@@ -311,17 +265,13 @@ fun VoiceInputOverlay(
                             fontSize = 16.sp
                         )
                     }
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(4.dp)
-                    ) {
+                    Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                         IconButton(
                             onClick = onDismiss,
-                            modifier = Modifier
-                                .size(32.dp)
-                                .testTag("close_voice_button")
+                            modifier = Modifier.size(32.dp).testTag("close_voice_button")
                         ) {
                             Icon(
-                                imageVector = Icons.Rounded.Close,
+                                Icons.Rounded.Close,
                                 contentDescription = "Close overlay",
                                 tint = MutedGrayDark,
                                 modifier = Modifier.size(18.dp)
@@ -334,60 +284,27 @@ fun VoiceInputOverlay(
 
                 if (!permissionGranted) {
                     PermissionRequestContent(
-                        onGrantPermission = {
-                            permissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
-                        }
+                        onGrantPermission = { permissionLauncher.launch(Manifest.permission.RECORD_AUDIO) }
                     )
                 } else {
-                    // Animated waveform display
-                    Box(
-                        contentAlignment = Alignment.Center,
-                        modifier = Modifier.size(180.dp)
-                    ) {
-                        // Outer rings
+                    Box(contentAlignment = Alignment.Center, modifier = Modifier.size(180.dp)) {
                         if (isListening && !isPaused) {
                             Box(
-                                modifier = Modifier
-                                    .size(150.dp)
-                                    .scale(pulseScale3)
-                                    .clip(CircleShape)
-                                    .background(
-                                        Brush.radialGradient(
-                                            colors = listOf(
-                                                BalanceGold.copy(alpha = glowAlpha * 0.3f),
-                                                BalanceGold.copy(alpha = 0f)
-                                            )
-                                        )
-                                    )
+                                modifier = Modifier.size(150.dp).scale(pulseScale3).clip(CircleShape)
+                                    .background(Brush.radialGradient(listOf(BalanceGold.copy(alpha = glowAlpha * 0.3f), BalanceGold.copy(alpha = 0f))))
                             )
                             Box(
-                                modifier = Modifier
-                                    .size(120.dp)
-                                    .scale(pulseScale2)
-                                    .clip(CircleShape)
-                                    .background(
-                                        Brush.radialGradient(
-                                            colors = listOf(
-                                                BalanceGold.copy(alpha = glowAlpha * 0.5f),
-                                                BalanceGold.copy(alpha = 0f)
-                                            )
-                                        )
-                                    )
+                                modifier = Modifier.size(120.dp).scale(pulseScale2).clip(CircleShape)
+                                    .background(Brush.radialGradient(listOf(BalanceGold.copy(alpha = glowAlpha * 0.5f), BalanceGold.copy(alpha = 0f))))
                             )
                             Box(
-                                modifier = Modifier
-                                    .size(90.dp)
-                                    .scale(pulseScale1)
-                                    .clip(CircleShape)
+                                modifier = Modifier.size(90.dp).scale(pulseScale1).clip(CircleShape)
                                     .background(BalanceGold.copy(alpha = glowAlpha * 0.3f))
                             )
                         }
 
-                        // Sound level indicator ring
                         if (isListening && !isPaused) {
-                            Canvas(
-                                modifier = Modifier.size(90.dp)
-                            ) {
+                            Canvas(modifier = Modifier.size(90.dp)) {
                                 val sweepAngle = soundLevel * 360f
                                 drawArc(
                                     color = BalanceGold,
@@ -399,20 +316,10 @@ fun VoiceInputOverlay(
                             }
                         }
 
-                        // Center button
                         Box(
-                            modifier = Modifier
-                                .size(72.dp)
-                                .clip(CircleShape)
-                                .background(
-                                    if (isPaused) MutedGrayDark.copy(alpha = 0.3f)
-                                    else BalanceGold
-                                )
-                                .border(
-                                    2.dp,
-                                    if (isPaused) MutedGrayDark else BalanceGoldLight,
-                                    CircleShape
-                                )
+                            modifier = Modifier.size(72.dp).clip(CircleShape)
+                                .background(if (isPaused) MutedGrayDark.copy(alpha = 0.3f) else BalanceGold)
+                                .border(2.dp, if (isPaused) MutedGrayDark else BalanceGoldLight, CircleShape)
                                 .clickable { togglePause() },
                             contentAlignment = Alignment.Center
                         ) {
@@ -431,49 +338,24 @@ fun VoiceInputOverlay(
 
                     Spacer(modifier = Modifier.height(40.dp))
 
-                    // Transcription display
                     Card(
                         modifier = Modifier.fillMaxWidth(),
-                        colors = CardDefaults.cardColors(
-                            containerColor = ShadowBlack
-                        ),
+                        colors = CardDefaults.cardColors(containerColor = ShadowBlack),
                         shape = RoundedCornerShape(16.dp),
                         border = BorderStroke(0.5.dp, BorderGrayDark)
                     ) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(16.dp)
-                        ) {
+                        Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
                             if (partialText.isNotBlank() && isListening) {
-                                Text(
-                                    text = "Partial:",
-                                    fontSize = 10.sp,
-                                    fontWeight = FontWeight.SemiBold,
-                                    color = BalanceGold.copy(alpha = 0.6f),
-                                    letterSpacing = 1.sp
-                                )
+                                Text("Partial:", fontSize = 10.sp, fontWeight = FontWeight.SemiBold, color = BalanceGold.copy(alpha = 0.6f), letterSpacing = 1.sp)
                                 Spacer(modifier = Modifier.height(4.dp))
-                                Text(
-                                    text = partialText,
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = MutedGrayDark,
-                                    lineHeight = 22.sp
-                                )
+                                Text(partialText, style = MaterialTheme.typography.bodyMedium, color = MutedGrayDark, lineHeight = 22.sp)
                                 Spacer(modifier = Modifier.height(12.dp))
-                                HorizontalDivider(
-                                    color = BorderGrayDark,
-                                    modifier = Modifier.padding(vertical = 4.dp)
-                                )
+                                HorizontalDivider(color = BorderGrayDark, modifier = Modifier.padding(vertical = 4.dp))
                                 Spacer(modifier = Modifier.height(4.dp))
                             }
-
                             Text(
-                                text = transcriptionText,
-                                style = MaterialTheme.typography.titleMedium.copy(
-                                    fontWeight = FontWeight.Medium,
-                                    lineHeight = 26.sp
-                                ),
+                                transcriptionText,
+                                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Medium, lineHeight = 26.sp),
                                 textAlign = TextAlign.Center,
                                 color = if (errorState != null) ErrorRed else MilkyWhiteText,
                                 modifier = Modifier.fillMaxWidth()
@@ -483,89 +365,37 @@ fun VoiceInputOverlay(
 
                     Spacer(modifier = Modifier.height(20.dp))
 
-                    // Status indicator
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         if (isPaused) {
-                            Icon(
-                                imageVector = Icons.Rounded.PauseCircle,
-                                contentDescription = null,
-                                tint = WarningAmber,
-                                modifier = Modifier.size(14.dp)
-                            )
-                            Text(
-                                text = "Paused — tap mic to resume",
-                                fontSize = 12.sp,
-                                color = WarningAmber.copy(alpha = 0.8f)
-                            )
+                            Icon(Icons.Rounded.PauseCircle, contentDescription = null, tint = WarningAmber, modifier = Modifier.size(14.dp))
+                            Text("Paused — tap mic to resume", fontSize = 12.sp, color = WarningAmber.copy(alpha = 0.8f))
                         } else if (isListening) {
-                            Icon(
-                                imageVector = Icons.Rounded.FiberManualRecord,
-                                contentDescription = null,
-                                tint = SuccessGreen,
-                                modifier = Modifier.size(8.dp)
-                            )
-                            Text(
-                                text = "Listening...",
-                                fontSize = 12.sp,
-                                color = SuccessGreen.copy(alpha = 0.8f)
-                            )
+                            Icon(Icons.Rounded.FiberManualRecord, contentDescription = null, tint = SuccessGreen, modifier = Modifier.size(8.dp))
+                            Text("Listening...", fontSize = 12.sp, color = SuccessGreen.copy(alpha = 0.8f))
                         } else if (errorState != null) {
-                            Icon(
-                                imageVector = Icons.Rounded.ErrorOutline,
-                                contentDescription = null,
-                                tint = ErrorRed,
-                                modifier = Modifier.size(14.dp)
-                            )
-                            Text(
-                                text = "Error occurred",
-                                fontSize = 12.sp,
-                                color = ErrorRed.copy(alpha = 0.8f)
-                            )
+                            Icon(Icons.Rounded.ErrorOutline, contentDescription = null, tint = ErrorRed, modifier = Modifier.size(14.dp))
+                            Text("Error occurred", fontSize = 12.sp, color = ErrorRed.copy(alpha = 0.8f))
                         } else {
-                            Text(
-                                text = "Processing complete",
-                                fontSize = 12.sp,
-                                color = MutedGrayDark
-                            )
+                            Text("Processing complete", fontSize = 12.sp, color = MutedGrayDark)
                         }
                     }
                 }
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                // Action buttons
                 if (permissionGranted) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                         OutlinedButton(
                             onClick = onDismiss,
                             modifier = Modifier.weight(1f),
                             shape = RoundedCornerShape(12.dp),
                             border = BorderStroke(1.dp, BorderGrayDark),
-                            colors = ButtonDefaults.outlinedButtonColors(
-                                contentColor = MutedGrayDark
-                            )
+                            colors = ButtonDefaults.outlinedButtonColors(contentColor = MutedGrayDark)
                         ) {
-                            Text(
-                                text = "Cancel",
-                                fontWeight = FontWeight.Medium,
-                                fontSize = 13.sp
-                            )
+                            Text("Cancel", fontWeight = FontWeight.Medium, fontSize = 13.sp)
                         }
-
                         Button(
-                            onClick = {
-                                if (isListening) {
-                                    stopListening()
-                                } else {
-                                    startListening()
-                                }
-                            },
+                            onClick = { if (isListening) stopListening() else startListening() },
                             modifier = Modifier.weight(1f),
                             shape = RoundedCornerShape(12.dp),
                             colors = ButtonDefaults.buttonColors(
@@ -574,16 +404,13 @@ fun VoiceInputOverlay(
                             )
                         ) {
                             Icon(
-                                imageVector = if (isListening || isPaused) Icons.Rounded.Refresh
-                                else Icons.Rounded.Mic,
+                                if (isListening || isPaused) Icons.Rounded.Refresh else Icons.Rounded.Mic,
                                 contentDescription = null,
                                 modifier = Modifier.size(16.dp)
                             )
                             Spacer(modifier = Modifier.width(6.dp))
                             Text(
-                                text = if (errorState != null) "Retry"
-                                else if (isListening || isPaused) "Restart"
-                                else "Start",
+                                if (errorState != null) "Retry" else if (isListening || isPaused) "Restart" else "Start",
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 13.sp
                             )
@@ -594,136 +421,60 @@ fun VoiceInputOverlay(
         }
     }
 
-    // Language selector dialog
     if (showLanguageSelector) {
         val languages = listOf(
-            "en" to "English",
-            "es" to "Español",
-            "fr" to "Français",
-            "de" to "Deutsch",
-            "it" to "Italiano",
-            "pt" to "Português",
-            "ru" to "Русский",
-            "ja" to "日本語",
-            "ko" to "한국어",
-            "zh" to "中文",
-            "hi" to "हिन्दी",
-            "ar" to "العربية"
+            "en" to "English", "es" to "Español", "fr" to "Français", "de" to "Deutsch",
+            "it" to "Italiano", "pt" to "Português", "ru" to "Русский", "ja" to "日本語",
+            "ko" to "한국어", "zh" to "中文", "hi" to "हिन्दी", "ar" to "العربية"
         )
-
         AlertDialog(
             onDismissRequest = { showLanguageSelector = false },
             containerColor = ShadowBlackCard,
             titleContentColor = MilkyWhiteText,
             textContentColor = MutedGrayDark,
-            title = {
-                Text("Select Language", fontWeight = FontWeight.Bold)
-            },
+            title = { Text("Select Language", fontWeight = FontWeight.Bold) },
             text = {
                 LazyColumn {
                     items(languages.size) { index ->
                         val (code, name) = languages[index]
                         Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable {
-                                    selectedLanguage = code
-                                    showLanguageSelector = false
-                                    stopListening()
-                                    startListening()
-                                }
-                                .padding(vertical = 10.dp),
+                            modifier = Modifier.fillMaxWidth().clickable { selectedLanguage = code; showLanguageSelector = false; stopListening(); startListening() }.padding(vertical = 10.dp),
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            Text(
-                                text = name,
-                                color = if (code == selectedLanguage) BalanceGold else MilkyWhiteText,
-                                fontWeight = if (code == selectedLanguage) FontWeight.Bold else FontWeight.Normal
-                            )
-                            if (code == selectedLanguage) {
-                                Icon(
-                                    imageVector = Icons.Rounded.Check,
-                                    contentDescription = null,
-                                    tint = BalanceGold,
-                                    modifier = Modifier.size(18.dp)
-                                )
-                            }
+                            Text(name, color = if (code == selectedLanguage) BalanceGold else MilkyWhiteText, fontWeight = if (code == selectedLanguage) FontWeight.Bold else FontWeight.Normal)
+                            if (code == selectedLanguage) Icon(Icons.Rounded.Check, contentDescription = null, tint = BalanceGold, modifier = Modifier.size(18.dp))
                         }
-                        if (index < languages.lastIndex) {
-                            HorizontalDivider(color = BorderGrayDark)
-                        }
+                        if (index < languages.lastIndex) HorizontalDivider(color = BorderGrayDark)
                     }
                 }
             },
-            confirmButton = {
-                TextButton(onClick = { showLanguageSelector = false }) {
-                    Text("Close", color = BalanceGold)
-                }
-            },
+            confirmButton = { TextButton(onClick = { showLanguageSelector = false }) { Text("Close", color = BalanceGold) } },
             shape = RoundedCornerShape(16.dp)
         )
     }
 }
 
 @Composable
-private fun PermissionRequestContent(
-    onGrantPermission: () -> Unit,
-    modifier: Modifier = Modifier
-) {
+private fun PermissionRequestContent(onGrantPermission: () -> Unit) {
     Column(
-        modifier = modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        Icon(
-            imageVector = Icons.Rounded.MicOff,
-            contentDescription = null,
-            tint = MutedGrayDark.copy(alpha = 0.5f),
-            modifier = Modifier.size(48.dp)
-        )
-
-        Text(
-            text = "Microphone Access Required",
-            style = MaterialTheme.typography.titleMedium,
-            textAlign = TextAlign.Center,
-            fontWeight = FontWeight.Bold,
-            color = MilkyWhiteText
-        )
-
-        Text(
-            text = "Troc needs microphone permission to capture your voice and transform it into balanced text. Your voice data is processed locally and never stored.",
-            style = MaterialTheme.typography.bodyMedium,
-            textAlign = TextAlign.Center,
-            color = MutedGrayDark,
-            lineHeight = 20.sp
-        )
-
+        Icon(Icons.Rounded.MicOff, contentDescription = null, tint = MutedGrayDark.copy(alpha = 0.5f), modifier = Modifier.size(48.dp))
+        Text("Microphone Access Required", style = MaterialTheme.typography.titleMedium, textAlign = TextAlign.Center, fontWeight = FontWeight.Bold, color = MilkyWhiteText)
+        Text("Troc needs microphone permission to capture your voice and transform it into balanced text. Your voice data is processed locally and never stored.", style = MaterialTheme.typography.bodyMedium, textAlign = TextAlign.Center, color = MutedGrayDark, lineHeight = 20.sp)
         Spacer(modifier = Modifier.height(8.dp))
-
         Button(
             onClick = onGrantPermission,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(48.dp)
-                .testTag("grant_permission_button"),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = BalanceGold,
-                contentColor = ShadowBlack
-            ),
+            modifier = Modifier.fillMaxWidth().height(48.dp).testTag("grant_permission_button"),
+            colors = ButtonDefaults.buttonColors(containerColor = BalanceGold, contentColor = ShadowBlack),
             shape = RoundedCornerShape(12.dp)
         ) {
-            Icon(
-                imageVector = Icons.Rounded.Mic,
-                contentDescription = null,
-                modifier = Modifier.size(18.dp)
-            )
+            Icon(Icons.Rounded.Mic, contentDescription = null, modifier = Modifier.size(18.dp))
             Spacer(modifier = Modifier.width(8.dp))
-            Text(
-                text = "Grant Microphone Permission",
-                fontWeight = FontWeight.Bold,
-                fontSize = 14.sp
-            )
+            Text("Grant Microphone Permission", fontWeight = FontWeight.Bold, fontSize = 14.sp)
         }
     }
 }
