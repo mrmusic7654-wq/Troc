@@ -1,6 +1,7 @@
 // app/src/main/java/com/example/ui/components/SettingsDrawerItem.kt
 package com.example.ui.components
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
