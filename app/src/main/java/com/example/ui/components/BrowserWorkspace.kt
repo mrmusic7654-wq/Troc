@@ -1,6 +1,7 @@
 // app/src/main/java/com/example/ui/components/BrowserWorkspace.kt
 package com.example.ui.components
 
+import androidx.compose.foundation.text.KeyboardOptions
 import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Bitmap
