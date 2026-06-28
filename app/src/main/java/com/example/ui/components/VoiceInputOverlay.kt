@@ -1,6 +1,11 @@
 // app/src/main/java/com/example/ui/components/VoiceInputOverlay.kt
 package com.example.ui.components
 
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
