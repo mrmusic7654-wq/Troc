@@ -152,7 +152,7 @@ fun SettingsScreen(
                                 containerColor = BalanceGold.copy(alpha = 0.1f),
                                 labelColor = BalanceGold
                             ),
-                            border = AssistChipDefaults.assistChipBorder(
+                            border = AssistChipDefaults.assistBorderStroke(
                                 borderColor = BalanceGold.copy(alpha = 0.3f)
                             ),
                             modifier = Modifier.padding(end = 8.dp)
