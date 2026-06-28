@@ -1,7 +1,6 @@
 // app/src/main/java/com/example/ui/screens/ChatScreen.kt
 package com.example.ui.screens
 
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.*
@@ -23,6 +22,7 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.testTag
@@ -64,7 +64,6 @@ fun ChatScreen(
     val isListening by viewModel.isListening.collectAsStateWithLifecycle()
 
     var inputPrompt by remember { mutableStateOf("") }
-    var showDeleteAllDialog by remember { mutableStateOf(false) }
     val listState = rememberLazyListState()
 
     LaunchedEffect(activeMessages.size, isGenerating) {
@@ -155,9 +154,7 @@ fun ChatScreen(
                 ) {
                     if (activeMessages.isEmpty() && activeSessionId == null) {
                         DashboardIntro(
-                            onSuggestionClick = { suggestion ->
-                                viewModel.sendMessage(suggestion)
-                            },
+                            onSuggestionClick = { suggestion -> viewModel.sendMessage(suggestion) },
                             onPromptSubmit = { prompt ->
                                 inputPrompt = prompt
                                 viewModel.sendMessage(prompt)
@@ -181,25 +178,19 @@ fun ChatScreen(
                             }
 
                             if (isGenerating) {
-                                item {
-                                    AssistantThinkingBubble()
-                                }
+                                item { AssistantThinkingBubble() }
                             }
                         }
                     }
                 }
 
-                errorMessage?.let { error ->
-                    ErrorBanner(error = error)
-                }
+                errorMessage?.let { error -> ErrorBanner(error = error) }
 
                 BottomChatControls(
                     prompt = inputPrompt,
                     onPromptChange = { inputPrompt = it },
                     isDeepThinkingEnabled = isDeepThinkingEnabled,
-                    onDeepThinkingToggle = {
-                        viewModel.isDeepThinkingEnabled.value = !isDeepThinkingEnabled
-                    },
+                    onDeepThinkingToggle = { viewModel.isDeepThinkingEnabled.value = !isDeepThinkingEnabled },
                     onSendClick = {
                         if (inputPrompt.isNotBlank()) {
                             viewModel.sendMessage(inputPrompt)
@@ -218,9 +209,7 @@ fun ChatScreen(
                     onResult = { result ->
                         inputPrompt = result
                         viewModel.isListening.value = false
-                        if (result.isNotBlank()) {
-                            viewModel.sendMessage(result)
-                        }
+                        if (result.isNotBlank()) viewModel.sendMessage(result)
                     }
                 )
             }
@@ -283,26 +272,11 @@ private fun DashboardIntro(
             value = customPrompt,
             onValueChange = { customPrompt = it },
             modifier = Modifier.fillMaxWidth(),
-            placeholder = {
-                Text(
-                    text = "Describe what you want to create...",
-                    color = MutedGrayDark.copy(alpha = 0.5f),
-                    fontSize = 14.sp
-                )
-            },
+            placeholder = { Text("Describe what you want to create...", color = MutedGrayDark.copy(alpha = 0.5f), fontSize = 14.sp) },
             trailingIcon = {
                 if (customPrompt.isNotBlank()) {
-                    IconButton(
-                        onClick = {
-                            onPromptSubmit(customPrompt)
-                            customPrompt = ""
-                        }
-                    ) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Rounded.Send,
-                            contentDescription = "Send",
-                            tint = BalanceGold
-                        )
+                    IconButton(onClick = { onPromptSubmit(customPrompt); customPrompt = "" }) {
+                        Icon(Icons.AutoMirrored.Rounded.Send, contentDescription = "Send", tint = BalanceGold)
                     }
                 }
             },
@@ -339,16 +313,9 @@ private fun DashboardIntro(
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 row.forEach { (text, emoji) ->
-                    SuggestionChip(
-                        emoji = emoji,
-                        text = text,
-                        onClick = { onSuggestionClick(text) },
-                        modifier = Modifier.weight(1f)
-                    )
+                    SuggestionChip(emoji = emoji, text = text, onClick = { onSuggestionClick(text) }, modifier = Modifier.weight(1f))
                 }
-                if (row.size < 2) {
-                    Spacer(modifier = Modifier.weight(1f))
-                }
+                if (row.size < 2) Spacer(modifier = Modifier.weight(1f))
             }
             Spacer(modifier = Modifier.height(8.dp))
         }
@@ -356,12 +323,7 @@ private fun DashboardIntro(
 }
 
 @Composable
-private fun SuggestionChip(
-    emoji: String,
-    text: String,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
+private fun SuggestionChip(emoji: String, text: String, onClick: () -> Unit, modifier: Modifier = Modifier) {
     Surface(
         modifier = modifier.clickable { onClick() },
         shape = RoundedCornerShape(12.dp),
@@ -374,23 +336,13 @@ private fun SuggestionChip(
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Text(text = emoji, fontSize = 14.sp)
-            Text(
-                text = text,
-                fontSize = 12.sp,
-                color = MilkyWhiteText.copy(alpha = 0.8f),
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
+            Text(text = text, fontSize = 12.sp, color = MilkyWhiteText.copy(alpha = 0.8f), maxLines = 1, overflow = TextOverflow.Ellipsis)
         }
     }
 }
 
 @Composable
-private fun MessageBubble(
-    message: ChatMessage,
-    isLightForce: Boolean,
-    modifier: Modifier = Modifier
-) {
+private fun MessageBubble(message: ChatMessage, isLightForce: Boolean, modifier: Modifier = Modifier) {
     val isUser = message.role == "user"
     val alignment = if (isUser) Alignment.End else Alignment.Start
     val bubbleColor = if (isUser) {
@@ -398,23 +350,15 @@ private fun MessageBubble(
     } else {
         if (isLightForce) MilkyWhiteCard else ShadowBlackCard
     }
-    val bubbleShape = if (isUser) {
-        RoundedCornerShape(16.dp, 4.dp, 16.dp, 16.dp)
-    } else {
-        RoundedCornerShape(4.dp, 16.dp, 16.dp, 16.dp)
-    }
+    val bubbleShape = if (isUser) RoundedCornerShape(16.dp, 4.dp, 16.dp, 16.dp)
+    else RoundedCornerShape(4.dp, 16.dp, 16.dp, 16.dp)
 
     Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(vertical = 4.dp),
+        modifier = modifier.fillMaxWidth().padding(vertical = 4.dp),
         horizontalAlignment = alignment
     ) {
         if (!isUser && message.reasoning != null) {
-            ReasoningCard(
-                reasoning = message.reasoning,
-                durationMs = message.durationMs
-            )
+            ReasoningCard(reasoning = message.reasoning, durationMs = message.durationMs)
             Spacer(modifier = Modifier.height(6.dp))
         }
 
@@ -423,11 +367,7 @@ private fun MessageBubble(
                 .widthIn(max = 320.dp)
                 .clip(bubbleShape)
                 .background(bubbleColor)
-                .border(
-                    0.5.dp,
-                    if (isUser) BorderGrayDark else BorderGrayDark.copy(alpha = 0.3f),
-                    bubbleShape
-                )
+                .border(0.5.dp, if (isUser) BorderGrayDark else BorderGrayDark.copy(alpha = 0.3f), bubbleShape)
                 .padding(horizontal = 14.dp, vertical = 10.dp)
         ) {
             Text(
@@ -450,21 +390,13 @@ private fun MessageBubble(
 }
 
 @Composable
-private fun ReasoningCard(
-    reasoning: String,
-    durationMs: Long?,
-    modifier: Modifier = Modifier
-) {
+private fun ReasoningCard(reasoning: String, durationMs: Long?, modifier: Modifier = Modifier) {
     var expanded by remember { mutableStateOf(false) }
 
     Card(
-        modifier = modifier
-            .widthIn(max = 300.dp)
-            .clickable { expanded = !expanded },
+        modifier = modifier.widthIn(max = 300.dp).clickable { expanded = !expanded },
         shape = RoundedCornerShape(10.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = BalanceGold.copy(alpha = 0.05f)
-        ),
+        colors = CardDefaults.cardColors(containerColor = BalanceGold.copy(alpha = 0.05f)),
         border = BorderStroke(0.5.dp, BalanceGold.copy(alpha = 0.2f))
     ) {
         Column(modifier = Modifier.padding(10.dp)) {
@@ -472,41 +404,20 @@ private fun ReasoningCard(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(6.dp)
             ) {
-                Icon(
-                    imageVector = Icons.Rounded.Psychology,
-                    contentDescription = null,
-                    tint = BalanceGold,
-                    modifier = Modifier.size(14.dp)
-                )
-                Text(
-                    text = "Deep Thought Process",
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = BalanceGold
-                )
-                if (durationMs != null) {
-                    Text(
-                        text = "• ${durationMs / 1000.0}s",
-                        fontSize = 10.sp,
-                        color = MutedGrayDark
-                    )
-                }
+                Icon(Icons.Rounded.Psychology, contentDescription = null, tint = BalanceGold, modifier = Modifier.size(14.dp))
+                Text("Deep Thought Process", fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = BalanceGold)
+                if (durationMs != null) Text("• ${durationMs / 1000.0}s", fontSize = 10.sp, color = MutedGrayDark)
                 Spacer(modifier = Modifier.weight(1f))
                 Icon(
-                    imageVector = if (expanded) Icons.Rounded.ExpandLess else Icons.Rounded.ExpandMore,
+                    if (expanded) Icons.Rounded.ExpandLess else Icons.Rounded.ExpandMore,
                     contentDescription = "Toggle",
                     tint = MutedGrayDark,
                     modifier = Modifier.size(16.dp)
                 )
             }
-
-            AnimatedVisibility(
-                visible = expanded,
-                enter = expandVertically() + fadeIn(),
-                exit = shrinkVertically() + fadeOut()
-            ) {
+            AnimatedVisibility(visible = expanded, enter = expandVertically() + fadeIn(), exit = shrinkVertically() + fadeOut()) {
                 Text(
-                    text = reasoning,
+                    reasoning,
                     fontSize = 12.sp,
                     color = MutedGrayDark,
                     lineHeight = 18.sp,
@@ -519,25 +430,11 @@ private fun ReasoningCard(
 }
 
 @Composable
-private fun AssistantThinkingBubble(
-    modifier: Modifier = Modifier
-) {
+private fun AssistantThinkingBubble(modifier: Modifier = Modifier) {
     val infiniteTransition = rememberInfiniteTransition(label = "thinking")
-    val dot1Alpha by infiniteTransition.animateFloat(
-        initialValue = 0.3f, targetValue = 1f,
-        animationSpec = infiniteRepeatable(tween(600), RepeatMode.Reverse),
-        label = "dot1"
-    )
-    val dot2Alpha by infiniteTransition.animateFloat(
-        initialValue = 0.3f, targetValue = 1f,
-        animationSpec = infiniteRepeatable(tween(600, 200), RepeatMode.Reverse),
-        label = "dot2"
-    )
-    val dot3Alpha by infiniteTransition.animateFloat(
-        initialValue = 0.3f, targetValue = 1f,
-        animationSpec = infiniteRepeatable(tween(600, 400), RepeatMode.Reverse),
-        label = "dot3"
-    )
+    val dot1Alpha by infiniteTransition.animateFloat(0.3f, 1f, infiniteRepeatable(tween(600), RepeatMode.Reverse), label = "dot1")
+    val dot2Alpha by infiniteTransition.animateFloat(0.3f, 1f, infiniteRepeatable(tween(600, 200), RepeatMode.Reverse), label = "dot2")
+    val dot3Alpha by infiniteTransition.animateFloat(0.3f, 1f, infiniteRepeatable(tween(600, 400), RepeatMode.Reverse), label = "dot3")
 
     Row(
         modifier = modifier
@@ -552,47 +449,22 @@ private fun AssistantThinkingBubble(
         YinYangLogo(size = 16.dp, isSpinning = true)
         Spacer(modifier = Modifier.width(4.dp))
         listOf(dot1Alpha, dot2Alpha, dot3Alpha).forEach { alpha ->
-            Box(
-                modifier = Modifier
-                    .size(5.dp)
-                    .alpha(alpha)
-                    .clip(CircleShape)
-                    .background(BalanceGold)
-            )
+            Box(Modifier.size(5.dp).graphicsLayer(alpha = alpha).clip(CircleShape).background(BalanceGold))
         }
     }
 }
 
 @Composable
-private fun ErrorBanner(
-    error: String,
-    modifier: Modifier = Modifier
-) {
+private fun ErrorBanner(error: String, modifier: Modifier = Modifier) {
     Card(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(horizontal = 12.dp, vertical = 4.dp),
+        modifier = modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 4.dp),
         colors = CardDefaults.cardColors(containerColor = Color(0x1CEF5350)),
         border = BorderStroke(0.5.dp, Color(0xFFEF5350).copy(alpha = 0.3f)),
         shape = RoundedCornerShape(10.dp)
     ) {
-        Row(
-            modifier = Modifier.padding(10.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            Icon(
-                imageVector = Icons.Rounded.ErrorOutline,
-                contentDescription = null,
-                tint = Color(0xFFEF5350),
-                modifier = Modifier.size(16.dp)
-            )
-            Text(
-                text = error,
-                style = MaterialTheme.typography.bodySmall,
-                color = Color(0xFFEF5350),
-                modifier = Modifier.weight(1f)
-            )
+        Row(modifier = Modifier.padding(10.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Icon(Icons.Rounded.ErrorOutline, contentDescription = null, tint = Color(0xFFEF5350), modifier = Modifier.size(16.dp))
+            Text(error, style = MaterialTheme.typography.bodySmall, color = Color(0xFFEF5350), modifier = Modifier.weight(1f))
         }
     }
 }
@@ -608,92 +480,39 @@ private fun BottomChatControls(
     isGenerating: Boolean,
     modifier: Modifier = Modifier
 ) {
-    Surface(
-        modifier = modifier.fillMaxWidth(),
-        color = MaterialTheme.colorScheme.background,
-        shadowElevation = 8.dp
-    ) {
-        Column(
-            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
+    Surface(modifier = modifier.fillMaxWidth(), color = MaterialTheme.colorScheme.background, shadowElevation = 8.dp) {
+        Column(modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)) {
+            Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 AssistChip(
                     onClick = onDeepThinkingToggle,
-                    label = {
-                        Text(
-                            text = "Deep Think",
-                            fontSize = 11.sp,
-                            fontWeight = if (isDeepThinkingEnabled) FontWeight.Bold else FontWeight.Normal
-                        )
-                    },
+                    label = { Text("Deep Think", fontSize = 11.sp, fontWeight = if (isDeepThinkingEnabled) FontWeight.Bold else FontWeight.Normal) },
                     leadingIcon = {
-                        Icon(
-                            imageVector = Icons.Rounded.Psychology,
-                            contentDescription = null,
-                            modifier = Modifier.size(14.dp),
-                            tint = if (isDeepThinkingEnabled) BalanceGold else MutedGrayDark
-                        )
+                        Icon(Icons.Rounded.Psychology, contentDescription = null, modifier = Modifier.size(14.dp), tint = if (isDeepThinkingEnabled) BalanceGold else MutedGrayDark)
                     },
                     colors = AssistChipDefaults.assistChipColors(
-                        containerColor = if (isDeepThinkingEnabled) {
-                            BalanceGold.copy(alpha = 0.12f)
-                        } else {
-                            Color.Transparent
-                        },
+                        containerColor = if (isDeepThinkingEnabled) BalanceGold.copy(alpha = 0.12f) else Color.Transparent,
                         labelColor = if (isDeepThinkingEnabled) BalanceGold else MutedGrayDark
                     ),
-                    border = AssistChipDefaults.assistChipBorder(
-                        borderColor = if (isDeepThinkingEnabled) BalanceGold.copy(alpha = 0.3f)
-                        else BorderGrayDark,
-                        enabled = true
-                    )
+                    border = AssistChipDefaults.assistChipBorder(borderColor = if (isDeepThinkingEnabled) BalanceGold.copy(alpha = 0.3f) else BorderGrayDark, enabled = true)
                 )
-
                 Spacer(modifier = Modifier.weight(1f))
             }
-
             Spacer(modifier = Modifier.height(8.dp))
-
             OutlinedTextField(
                 value = prompt,
                 onValueChange = onPromptChange,
                 modifier = Modifier.fillMaxWidth(),
-                placeholder = {
-                    Text(
-                        text = "Harmonize your thoughts...",
-                        color = MutedGrayDark.copy(alpha = 0.5f),
-                        fontSize = 13.sp
-                    )
-                },
+                placeholder = { Text("Harmonize your thoughts...", color = MutedGrayDark.copy(alpha = 0.5f), fontSize = 13.sp) },
                 trailingIcon = {
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(2.dp)
-                    ) {
-                        IconButton(
-                            onClick = onMicClick,
-                            modifier = Modifier.size(36.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Rounded.Mic,
-                                contentDescription = "Voice input",
-                                tint = MutedGrayDark,
-                                modifier = Modifier.size(18.dp)
-                            )
+                    Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
+                        IconButton(onClick = onMicClick, modifier = Modifier.size(36.dp)) {
+                            Icon(Icons.Rounded.Mic, contentDescription = "Voice input", tint = MutedGrayDark, modifier = Modifier.size(18.dp))
                         }
-                        IconButton(
-                            onClick = onSendClick,
-                            enabled = prompt.isNotBlank() && !isGenerating,
-                            modifier = Modifier.size(36.dp)
-                        ) {
+                        IconButton(onClick = onSendClick, enabled = prompt.isNotBlank() && !isGenerating, modifier = Modifier.size(36.dp)) {
                             Icon(
-                                imageVector = Icons.AutoMirrored.Rounded.Send,
+                                Icons.AutoMirrored.Rounded.Send,
                                 contentDescription = "Send",
-                                tint = if (prompt.isNotBlank() && !isGenerating) BalanceGold
-                                else MutedGrayDark.copy(alpha = 0.3f),
+                                tint = if (prompt.isNotBlank() && !isGenerating) BalanceGold else MutedGrayDark.copy(alpha = 0.3f),
                                 modifier = Modifier.size(18.dp)
                             )
                         }
