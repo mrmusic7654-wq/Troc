@@ -23,6 +23,15 @@ interface ChatDao {
     @Query("SELECT * FROM chat_sessions WHERE title LIKE '%' || :query || '%' ORDER BY createdAt DESC")
     fun searchSessions(query: String): Flow<List<ChatSession>>
 
+    @Query("SELECT * FROM chat_sessions WHERE isPinned = 1 ORDER BY updatedAt DESC")
+    fun getPinnedSessions(): Flow<List<ChatSession>>
+
+    @Query("SELECT * FROM chat_sessions WHERE isArchived = 1 ORDER BY updatedAt DESC")
+    fun getArchivedSessions(): Flow<List<ChatSession>>
+
+    @Query("SELECT * FROM chat_sessions WHERE isArchived = 0 ORDER BY updatedAt DESC")
+    fun getActiveSessions(): Flow<List<ChatSession>>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertSession(session: ChatSession): Long
 
@@ -32,8 +41,26 @@ interface ChatDao {
     @Query("UPDATE chat_sessions SET title = :title WHERE id = :id")
     suspend fun updateSessionTitle(id: Long, title: String)
 
-    @Query("UPDATE chat_sessions SET title = :title, createdAt = :updatedAt WHERE id = :id")
+    @Query("UPDATE chat_sessions SET title = :title, updatedAt = :updatedAt WHERE id = :id")
     suspend fun updateSession(id: Long, title: String, updatedAt: Long = System.currentTimeMillis())
+
+    @Query("UPDATE chat_sessions SET isPinned = :isPinned, updatedAt = :updatedAt WHERE id = :id")
+    suspend fun togglePinSession(id: Long, isPinned: Boolean, updatedAt: Long = System.currentTimeMillis())
+
+    @Query("UPDATE chat_sessions SET isArchived = :isArchived, updatedAt = :updatedAt WHERE id = :id")
+    suspend fun toggleArchiveSession(id: Long, isArchived: Boolean, updatedAt: Long = System.currentTimeMillis())
+
+    @Query("UPDATE chat_sessions SET modelUsed = :modelId, updatedAt = :updatedAt WHERE id = :id")
+    suspend fun updateSessionModel(id: Long, modelId: String, updatedAt: Long = System.currentTimeMillis())
+
+    @Query("UPDATE chat_sessions SET personalityId = :personalityId, personalityName = :personalityName, updatedAt = :updatedAt WHERE id = :id")
+    suspend fun updateSessionPersonality(id: Long, personalityId: String, personalityName: String, updatedAt: Long = System.currentTimeMillis())
+
+    @Query("UPDATE chat_sessions SET contextSnapshotJson = :snapshot, updatedAt = :updatedAt WHERE id = :id")
+    suspend fun updateContextSnapshot(id: Long, snapshot: String?, updatedAt: Long = System.currentTimeMillis())
+
+    @Query("UPDATE chat_sessions SET colorLabel = :color, updatedAt = :updatedAt WHERE id = :id")
+    suspend fun updateSessionColor(id: Long, color: String, updatedAt: Long = System.currentTimeMillis())
 
     @Query("DELETE FROM chat_sessions WHERE id = :id")
     suspend fun deleteSessionById(id: Long)
@@ -66,17 +93,23 @@ interface ChatDao {
     @Query("SELECT * FROM chat_messages WHERE sessionId = :sessionId AND role = :role ORDER BY timestamp ASC")
     fun getMessagesByRole(sessionId: Long, role: String): Flow<List<ChatMessage>>
 
+    @Query("SELECT * FROM chat_messages WHERE isBookmarked = 1 ORDER BY timestamp DESC")
+    fun getBookmarkedMessages(): Flow<List<ChatMessage>>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertMessage(message: ChatMessage): Long
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertMessages(messages: List<ChatMessage>): List<Long>
 
-    @Query("UPDATE chat_messages SET text = :text WHERE id = :id")
+    @Query("UPDATE chat_messages SET text = :text, isEdited = 1 WHERE id = :id")
     suspend fun updateMessageText(id: Long, text: String)
 
     @Query("UPDATE chat_messages SET reasoning = :reasoning WHERE id = :id")
     suspend fun updateMessageReasoning(id: Long, reasoning: String?)
+
+    @Query("UPDATE chat_messages SET isBookmarked = :isBookmarked WHERE id = :id")
+    suspend fun toggleBookmark(id: Long, isBookmarked: Boolean)
 
     @Query("DELETE FROM chat_messages WHERE id = :id")
     suspend fun deleteMessageById(id: Long)
@@ -98,6 +131,16 @@ interface ChatDao {
 
     @Query("SELECT role, COUNT(*) as count FROM chat_messages WHERE sessionId = :sessionId GROUP BY role")
     suspend fun getMessageRoleCounts(sessionId: Long): List<RoleCount>
+
+    // ═══════════════════════════════════════
+    // Context Window Operations
+    // ═══════════════════════════════════════
+
+    @Query("SELECT SUM(LENGTH(text) + COALESCE(LENGTH(reasoning), 0)) FROM chat_messages WHERE sessionId = :sessionId")
+    suspend fun getTotalCharacterCount(sessionId: Long): Long?
+
+    @Query("SELECT * FROM chat_messages WHERE sessionId = :sessionId ORDER BY timestamp ASC LIMIT :limit OFFSET :offset")
+    suspend fun getMessageWindow(sessionId: Long, limit: Int, offset: Int): List<ChatMessage>
 
     // ═══════════════════════════════════════
     // Bulk & Transactional Operations
@@ -137,13 +180,7 @@ interface ChatDao {
     @Query("SELECT * FROM chat_messages WHERE sessionId IN (SELECT id FROM chat_sessions ORDER BY createdAt DESC LIMIT :limit) ORDER BY timestamp DESC")
     fun getRecentMessagesAcrossSessions(limit: Int = 5): Flow<List<ChatMessage>>
 
-    @Query("""
-        SELECT DISTINCT cm.sessionId 
-        FROM chat_messages cm 
-        WHERE cm.text LIKE '%' || :query || '%' 
-        OR cm.reasoning LIKE '%' || :query || '%'
-        LIMIT :limit
-    """)
+    @Query("SELECT DISTINCT cm.sessionId FROM chat_messages cm WHERE cm.text LIKE '%' || :query || '%' OR cm.reasoning LIKE '%' || :query || '%' LIMIT :limit")
     suspend fun searchMessagesAcrossSessions(query: String, limit: Int = 10): List<Long>
 
     @Transaction
@@ -155,7 +192,9 @@ interface ChatDao {
             appendLine("  \"session\": {")
             appendLine("    \"id\": ${session?.id},")
             appendLine("    \"title\": \"${session?.title}\",")
-            appendLine("    \"createdAt\": ${session?.createdAt}")
+            appendLine("    \"createdAt\": ${session?.createdAt},")
+            appendLine("    \"modelUsed\": \"${session?.modelUsed}\",")
+            appendLine("    \"personalityId\": \"${session?.personalityId}\"")
             appendLine("  },")
             appendLine("  \"messages\": [")
             messages.forEachIndexed { index, msg ->
@@ -186,24 +225,16 @@ interface ChatDao {
     @Query("SELECT AVG(LENGTH(text)) FROM chat_messages WHERE role = 'model'")
     suspend fun getAverageResponseLength(): Double?
 
-    @Query("""
-        SELECT strftime('%Y-%m-%d', datetime(timestamp / 1000, 'unixepoch')) as date, 
-               COUNT(*) as count 
-        FROM chat_messages 
-        GROUP BY date 
-        ORDER BY date DESC 
-        LIMIT :days
-    """)
+    @Query("SELECT modelUsed, COUNT(*) as count FROM chat_messages WHERE modelUsed IS NOT NULL AND modelUsed != '' GROUP BY modelUsed ORDER BY count DESC")
+    suspend fun getModelUsageStats(): List<ModelUsageCount>
+
+    @Query("SELECT personalityUsed, COUNT(*) as count FROM chat_messages WHERE personalityUsed IS NOT NULL AND personalityUsed != '' GROUP BY personalityUsed ORDER BY count DESC")
+    suspend fun getPersonalityUsageStats(): List<PersonalityUsageCount>
+
+    @Query("SELECT strftime('%Y-%m-%d', datetime(timestamp / 1000, 'unixepoch')) as date, COUNT(*) as count FROM chat_messages GROUP BY date ORDER BY date DESC LIMIT :days")
     suspend fun getMessageCountByDay(days: Int = 30): List<DailyCount>
 
-    @Query("""
-        SELECT strftime('%H', datetime(timestamp / 1000, 'unixepoch')) as hour,
-               COUNT(*) as count
-        FROM chat_messages
-        WHERE timestamp > :since
-        GROUP BY hour
-        ORDER BY hour ASC
-    """)
+    @Query("SELECT strftime('%H', datetime(timestamp / 1000, 'unixepoch')) as hour, COUNT(*) as count FROM chat_messages WHERE timestamp > :since GROUP BY hour ORDER BY hour ASC")
     suspend fun getMessageCountByHour(since: Long): List<HourlyCount>
 }
 
@@ -223,5 +254,15 @@ data class DailyCount(
 
 data class HourlyCount(
     val hour: String,
+    val count: Int
+)
+
+data class ModelUsageCount(
+    val modelUsed: String,
+    val count: Int
+)
+
+data class PersonalityUsageCount(
+    val personalityUsed: String,
     val count: Int
 )
