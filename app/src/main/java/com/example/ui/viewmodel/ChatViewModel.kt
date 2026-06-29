@@ -6,8 +6,12 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.BuildConfig
 import com.example.data.api.*
+import com.example.data.continuity.ChatContinuityManager
 import com.example.data.database.ChatMessage
 import com.example.data.database.ChatSession
+import com.example.data.filemanager.AttachedFile
+import com.example.data.filemanager.FileUploadManager
+import com.example.data.personality.PersonalityProfile
 import com.example.data.repository.ChatRepository
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.*
@@ -42,22 +46,26 @@ class ChatViewModel(private val repository: ChatRepository) : ViewModel() {
     val isListening = MutableStateFlow(false)
     val currentThinkingProcess = MutableStateFlow<String?>(null)
     val generationProgress = MutableStateFlow(0f)
-    val selectedModel = MutableStateFlow("gemini-2.0-flash")
-    val temperature = MutableStateFlow(0.7f)
-    val maxOutputTokens = MutableStateFlow(4096)
 
-    private val _availableModels = listOf(
-        "gemini-2.0-flash" to "Fast & Responsive",
-        "gemini-2.0-pro" to "Deep Reasoning",
-        "gemini-1.5-pro" to "Balanced Legacy"
-    )
-    val availableModels: List<Pair<String, String>> = _availableModels
+    // Model & Personality
+    val selectedModel = MutableStateFlow(GeminiModel.default)
+    val selectedPersonality = MutableStateFlow(PersonalityProfile.DEFAULT)
+
+    // Context window tracking
+    val contextTokenCount = MutableStateFlow(0)
+    val contextUsageFraction = MutableStateFlow(0f)
+    val isContextNearLimit = MutableStateFlow(false)
+
+    // Auto-save
+    val autoSaveEnabled = MutableStateFlow(true)
+    val lastSaveTimestamp = MutableStateFlow(System.currentTimeMillis())
 
     fun selectSession(sessionId: Long?) {
         activeSessionId.value = sessionId
         errorMessage.value = null
         currentThinkingProcess.value = null
         generationProgress.value = 0f
+        updateContextStats()
     }
 
     fun startNewChat() {
@@ -65,6 +73,10 @@ class ChatViewModel(private val repository: ChatRepository) : ViewModel() {
         errorMessage.value = null
         currentThinkingProcess.value = null
         generationProgress.value = 0f
+        FileUploadManager.clearAll()
+        contextTokenCount.value = 0
+        contextUsageFraction.value = 0f
+        isContextNearLimit.value = false
     }
 
     fun renameSession(sessionId: Long, newTitle: String) {
@@ -76,6 +88,7 @@ class ChatViewModel(private val repository: ChatRepository) : ViewModel() {
     fun deleteSession(sessionId: Long) {
         viewModelScope.launch {
             repository.deleteSession(sessionId)
+            ChatContinuityManager.clearSession(sessionId)
             if (activeSessionId.value == sessionId) {
                 activeSessionId.value = null
             }
@@ -85,21 +98,22 @@ class ChatViewModel(private val repository: ChatRepository) : ViewModel() {
     fun clearAllHistory() {
         viewModelScope.launch {
             repository.clearAll()
+            ChatContinuityManager.clearAll()
             activeSessionId.value = null
-            currentThinkingProcess.value = null
+            FileUploadManager.clearAll()
         }
     }
 
-    fun setModel(model: String) {
+    fun setModel(model: GeminiModel) {
         selectedModel.value = model
     }
 
-    fun setTemperature(temp: Float) {
-        temperature.value = temp.coerceIn(0f, 2f)
+    fun setPersonality(personality: PersonalityProfile) {
+        selectedPersonality.value = personality
     }
 
-    fun setMaxTokens(tokens: Int) {
-        maxOutputTokens.value = tokens.coerceIn(256, 8192)
+    fun toggleAutoSave() {
+        autoSaveEnabled.value = !autoSaveEnabled.value
     }
 
     fun sendMessage(text: String) {
@@ -133,9 +147,15 @@ class ChatViewModel(private val repository: ChatRepository) : ViewModel() {
 
             try {
                 val startTime = System.currentTimeMillis()
+                val model = selectedModel.value
+                val personality = selectedPersonality.value
 
-                val systemInstruction = buildSystemInstruction()
+                // Build system instruction from personality
+                val systemInstruction = Content(
+                    parts = listOf(Part(text = personality.toCustomPrompt()))
+                )
 
+                // Map messages to Gemini contents
                 val contents = history.map { msg ->
                     Content(
                         role = if (msg.role == "user") "user" else "model",
@@ -148,18 +168,21 @@ class ChatViewModel(private val repository: ChatRepository) : ViewModel() {
                     contents = contents,
                     systemInstruction = systemInstruction,
                     generationConfig = GenerationConfig(
-                        temperature = temperature.value,
-                        topP = 0.95f,
-                        topK = 40,
-                        maxOutputTokens = maxOutputTokens.value
+                        temperature = personality.temperature,
+                        topP = personality.topP,
+                        topK = model.defaultTopK,
+                        maxOutputTokens = personality.maxTokens
                     )
                 )
 
                 generationProgress.value = 0.3f
 
+                // Track usage
+                ModelUsageTracker.recordRequest(model.modelId)
+
                 val response = RetrofitClient.service.generateContent(
                     apiKey,
-                    selectedModel.value,
+                    model.modelId,
                     request
                 )
 
@@ -177,10 +200,7 @@ class ChatViewModel(private val repository: ChatRepository) : ViewModel() {
                 var extractedReasoning: String? = null
                 var finalAnswerText = fullResponseText
 
-                val thoughtRegex = Regex(
-                    "<thought>(.*?)</thought>",
-                    RegexOption.DOT_MATCHES_ALL
-                )
+                val thoughtRegex = Regex("<thought>(.*?)</thought>", RegexOption.DOT_MATCHES_ALL)
                 val match = thoughtRegex.find(fullResponseText)
                 if (match != null) {
                     extractedReasoning = match.groupValues[1].trim()
@@ -209,6 +229,24 @@ class ChatViewModel(private val repository: ChatRepository) : ViewModel() {
                     val smartTitle = generateSmartTitle(text, finalAnswerText)
                     repository.updateSessionTitle(targetSessionId, smartTitle)
                 }
+
+                // Update context stats
+                updateContextStats()
+
+                // Auto-save continuity state
+                if (autoSaveEnabled.value) {
+                    val updatedHistory = repository.getSessionMessages(targetSessionId)
+                    ChatContinuityManager.createSessionSnapshot(
+                        sessionId = targetSessionId,
+                        title = smartTitle ?: "Session $targetSessionId",
+                        messages = updatedHistory,
+                        contextTokens = ChatContinuityManager.estimateTokenCount(updatedHistory)
+                    )
+                    lastSaveTimestamp.value = System.currentTimeMillis()
+                }
+
+                // Clear attachments after successful send
+                FileUploadManager.clearAll()
 
             } catch (e: Exception) {
                 val errorMsg = when {
@@ -253,76 +291,53 @@ class ChatViewModel(private val repository: ChatRepository) : ViewModel() {
         errorMessage.value = "Generation halted. Balance preserved."
     }
 
-    private fun buildSystemInstruction(): Content {
-        val basePrompt = if (isDeepThinkingEnabled.value) {
-            """
-            You are Troc Agent — a master-level AI reasoning system embodying Yin-Yang dual balance.
-
-            ═══ CORE DIRECTIVES ═══
-            1. DEEP THINKING PROTOCOL:
-               - Begin EVERY response inside <thought>...</thought> tags
-               - Detail your step-by-step reasoning, analysis, and internal debates
-               - Consider multiple perspectives before converging on the optimal answer
-               - Show logical chains, trade-offs evaluated, and why alternatives were rejected
-
-            2. RESPONSE STRUCTURE:
-               <thought>
-               [Your complete reasoning process here]
-               </thought>
-               
-               [Your polished, direct, comprehensive final answer here]
-
-            3. QUALITY STANDARDS:
-               - Be thorough yet concise in final output
-               - Use markdown formatting for clarity
-               - Provide code examples when relevant
-               - Cite reasoning when giving technical answers
-               - Balance creativity with accuracy
-
-            4. TONE:
-               - Professional yet warm
-               - Confident yet humble
-               - Precise yet flowing
-               - Like a wise mentor in perfect balance
-            """.trimIndent()
-        } else {
-            """
-            You are Troc Agent — a highly capable AI assistant.
-            Provide exceptionally polished, precise, and direct answers.
-            Be thorough, accurate, and helpful in every response.
-            Use markdown formatting for clarity and structure.
-            """.trimIndent()
+    fun continueSession(sessionId: Long) {
+        viewModelScope.launch {
+            activeSessionId.value = sessionId
+            errorMessage.value = null
+            val snapshot = ChatContinuityManager.getContinuityState(sessionId)
+            if (snapshot.contextWindow != null) {
+                contextTokenCount.value = snapshot.contextWindow.totalTokens
+                contextUsageFraction.value = snapshot.contextWindow.usageFraction
+                isContextNearLimit.value = snapshot.contextWindow.usageFraction > 0.9f
+            }
         }
-
-        return Content(
-            parts = listOf(Part(text = basePrompt))
-        )
     }
+
+    fun getContextWindowSummary(): String {
+        val messages = activeMessages.value
+        if (messages.isEmpty()) return "Empty context"
+        val tokens = ChatContinuityManager.estimateTokenCount(messages)
+        val percentage = ChatContinuityManager.getContextPercentage(tokens)
+        return "${messages.size} msgs • ${if (tokens >= 1000) "${tokens/1000}K" else "$tokens"} / 1M tokens (${(percentage * 100).toInt()}%)"
+    }
+
+    private fun updateContextStats() {
+        viewModelScope.launch {
+            val messages = activeMessages.value
+            val tokens = ChatContinuityManager.estimateTokenCount(messages)
+            contextTokenCount.value = tokens
+            contextUsageFraction.value = ChatContinuityManager.getContextPercentage(tokens)
+            isContextNearLimit.value = contextUsageFraction.value > 0.9f
+        }
+    }
+
+    private var smartTitle: String? = null
 
     private fun generateSmartTitle(userPrompt: String, aiResponse: String): String {
         val cleanPrompt = userPrompt.take(40).trim()
         val firstLine = aiResponse.lines().firstOrNull { it.isNotBlank() }?.take(40)?.trim()
-        return firstLine?.let { line ->
+        val title = firstLine?.let { line ->
             if (line.length < cleanPrompt.length) line else cleanPrompt
         } ?: cleanPrompt
-    }
-
-    fun getSessionPreview(sessionId: Long): String {
-        return try {
-            viewModelScope.launch {
-                repository.getSessionMessages(sessionId)
-            }
-            ""
-        } catch (e: Exception) {
-            ""
-        }
+        smartTitle = title
+        return title
     }
 
     companion object {
         const val DEFAULT_TEMPERATURE = 0.7f
         const val DEFAULT_MAX_TOKENS = 4096
-        const val THINKING_MODEL = "gemini-2.0-pro"
-        const val FAST_MODEL = "gemini-2.0-flash"
+        const val MAX_CONTEXT_TOKENS = 1_048_576
     }
 }
 
