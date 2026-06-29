@@ -85,9 +85,6 @@ fun ChatScreen(
         modifier = modifier,
         topBar = {
             Column {
-                // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-                // TOP BAR
-                // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
                 TopAppBar(
                     title = {
                         Row(
@@ -123,11 +120,7 @@ fun ChatScreen(
                     },
                     navigationIcon = {
                         IconButton(onClick = onMenuClick) {
-                            Icon(
-                                imageVector = Icons.Rounded.Menu,
-                                contentDescription = "Menu",
-                                tint = MaterialTheme.colorScheme.onBackground
-                            )
+                            Icon(Icons.Rounded.Menu, "Menu", tint = MaterialTheme.colorScheme.onBackground)
                         }
                     },
                     actions = {
@@ -137,37 +130,21 @@ fun ChatScreen(
                             isEnabled = !isGenerating
                         )
                         Spacer(modifier = Modifier.width(4.dp))
-                        IconButton(
-                            onClick = { isDarkMode = !isDarkMode },
-                            modifier = Modifier.size(36.dp)
-                        ) {
+                        IconButton(onClick = { isDarkMode = !isDarkMode }, modifier = Modifier.size(36.dp)) {
                             Icon(
-                                imageVector = if (isDarkMode) Icons.Rounded.DarkMode else Icons.Rounded.LightMode,
-                                contentDescription = "Toggle dark mode",
+                                if (isDarkMode) Icons.Rounded.DarkMode else Icons.Rounded.LightMode,
+                                "Toggle dark mode",
                                 tint = if (isDarkMode) BalanceGold else MutedGrayDark,
                                 modifier = Modifier.size(20.dp)
                             )
                         }
-                        IconButton(
-                            onClick = { viewModel.startNewChat() },
-                            modifier = Modifier.size(36.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Rounded.AddCircleOutline,
-                                contentDescription = "New Chat",
-                                tint = MaterialTheme.colorScheme.onBackground,
-                                modifier = Modifier.size(22.dp)
-                            )
+                        IconButton(onClick = { viewModel.startNewChat() }, modifier = Modifier.size(36.dp)) {
+                            Icon(Icons.Rounded.AddCircleOutline, "New Chat", tint = MaterialTheme.colorScheme.onBackground, modifier = Modifier.size(22.dp))
                         }
                     },
-                    colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.background
-                    )
+                    colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background)
                 )
 
-                // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-                // PERSONALITY SELECTOR
-                // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
                 PersonalitySelectorBar(
                     selectedPersonality = selectedPersonality,
                     onPersonalitySelected = { viewModel.setPersonality(it) },
@@ -175,19 +152,9 @@ fun ChatScreen(
                     isEnabled = !isGenerating
                 )
 
-                // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-                // CONTEXT WINDOW INDICATOR
-                // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
                 if (activeSessionId != null && activeMessages.isNotEmpty()) {
-                    Surface(
-                        modifier = Modifier.fillMaxWidth(),
-                        color = ShadowBlackCard
-                    ) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 12.dp, vertical = 6.dp)
-                        ) {
+                    Surface(modifier = Modifier.fillMaxWidth(), color = ShadowBlackCard) {
+                        Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 6.dp)) {
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -199,60 +166,34 @@ fun ChatScreen(
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     Icon(
-                                        imageVector = Icons.Rounded.Memory,
-                                        contentDescription = null,
-                                        tint = when {
-                                            contextUsageFraction > 0.9f -> ErrorRed
-                                            contextUsageFraction > 0.7f -> WarningAmber
-                                            else -> BalanceGold
-                                        },
+                                        Icons.Rounded.Memory, null,
+                                        tint = when { contextUsageFraction > 0.9f -> ErrorRed; contextUsageFraction > 0.7f -> WarningAmber; else -> BalanceGold },
                                         modifier = Modifier.size(12.dp)
                                     )
-                                    Text(
-                                        text = "${activeMessages.size} messages",
-                                        fontSize = 10.sp,
-                                        color = MutedGrayDark,
-                                        fontFamily = FontFamily.Monospace
-                                    )
+                                    Text("${activeMessages.size} messages", fontSize = 10.sp, color = MutedGrayDark, fontFamily = FontFamily.Monospace)
                                 }
                                 Text(
-                                    text = "${(contextUsageFraction * 100).toInt()}% of 1M • ${if (contextTokenCount >= 1000) "${contextTokenCount / 1000}K" else "$contextTokenCount"} tokens",
-                                    fontSize = 10.sp,
-                                    fontFamily = FontFamily.Monospace,
-                                    color = when {
-                                        contextUsageFraction > 0.9f -> ErrorRed
-                                        contextUsageFraction > 0.7f -> WarningAmber
-                                        else -> SuccessGreen
-                                    }
+                                    "${(contextUsageFraction * 100).toInt()}% of 1M • ${if (contextTokenCount >= 1000) "${contextTokenCount / 1000}K" else "$contextTokenCount"} tokens",
+                                    fontSize = 10.sp, fontFamily = FontFamily.Monospace,
+                                    color = when { contextUsageFraction > 0.9f -> ErrorRed; contextUsageFraction > 0.7f -> WarningAmber; else -> SuccessGreen }
                                 )
                             }
-                            Spacer(modifier = Modifier.height(4.dp))
+                            Spacer(Modifier.height(4.dp))
                             LinearProgressIndicator(
                                 progress = { contextUsageFraction },
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(3.dp)
-                                    .clip(RoundedCornerShape(2.dp)),
-                                color = when {
-                                    contextUsageFraction > 0.9f -> ErrorRed
-                                    contextUsageFraction > 0.7f -> WarningAmber
-                                    else -> BalanceGold
-                                },
+                                modifier = Modifier.fillMaxWidth().height(3.dp).clip(RoundedCornerShape(2.dp)),
+                                color = when { contextUsageFraction > 0.9f -> ErrorRed; contextUsageFraction > 0.7f -> WarningAmber; else -> BalanceGold },
                                 trackColor = BorderGrayDark
                             )
                         }
                     }
                 }
 
-                // Generation Progress
                 if (isGenerating) {
                     LinearProgressIndicator(
                         progress = { generationProgress },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(2.dp),
-                        color = BalanceGold,
-                        trackColor = BorderGrayDark
+                        modifier = Modifier.fillMaxWidth().height(2.dp),
+                        color = BalanceGold, trackColor = BorderGrayDark
                     )
                 }
             }
@@ -260,20 +201,10 @@ fun ChatScreen(
         containerColor = MaterialTheme.colorScheme.background
     ) { innerPadding ->
         Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-                .background(MaterialTheme.colorScheme.background)
+            modifier = Modifier.fillMaxSize().padding(innerPadding).background(MaterialTheme.colorScheme.background)
         ) {
             Column(modifier = Modifier.fillMaxSize()) {
-                // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-                // MAIN CONTENT
-                // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-                Box(
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxWidth()
-                ) {
+                Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
                     if (activeMessages.isEmpty() && activeSessionId == null) {
                         DashboardIntro(
                             onSuggestionClick = { viewModel.sendMessage(it) },
@@ -285,28 +216,16 @@ fun ChatScreen(
                     } else {
                         LazyColumn(
                             state = listState,
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .padding(horizontal = 12.dp),
+                            modifier = Modifier.fillMaxSize().padding(horizontal = 12.dp),
                             contentPadding = PaddingValues(top = 8.dp, bottom = 24.dp),
                             verticalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
                             items(activeMessages) { message ->
-                                MessageBubble(
-                                    message = message,
-                                    isLightForce = !isDarkMode
-                                )
+                                MessageBubble(message = message, isLightForce = !isDarkMode)
                             }
-
                             if (isGenerating && currentThinkingProcess != null) {
-                                item {
-                                    ReasoningCardLive(
-                                        reasoning = currentThinkingProcess ?: "",
-                                        isStreaming = true
-                                    )
-                                }
+                                item { ReasoningCardLive(reasoning = currentThinkingProcess ?: "", isStreaming = true) }
                             }
-
                             if (isGenerating) {
                                 item { AssistantThinkingBubble() }
                             }
@@ -314,44 +233,24 @@ fun ChatScreen(
                     }
                 }
 
-                // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-                // ERROR BANNER
-                // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
                 errorMessage?.let { error ->
                     Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 12.dp, vertical = 4.dp),
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 4.dp),
                         colors = CardDefaults.cardColors(containerColor = ErrorRedBg),
                         border = BorderStroke(0.5.dp, ErrorRed.copy(alpha = 0.3f)),
                         shape = RoundedCornerShape(10.dp)
                     ) {
                         Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(12.dp),
+                            modifier = Modifier.fillMaxWidth().padding(12.dp),
                             horizontalArrangement = Arrangement.spacedBy(8.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Icon(
-                                imageVector = Icons.Rounded.ErrorOutline,
-                                contentDescription = "Error",
-                                tint = ErrorRed,
-                                modifier = Modifier.size(16.dp)
-                            )
-                            Text(
-                                text = error,
-                                style = MaterialTheme.typography.bodySmall,
-                                color = ErrorRed,
-                                modifier = Modifier.weight(1f)
-                            )
+                            Icon(Icons.Rounded.ErrorOutline, "Error", tint = ErrorRed, modifier = Modifier.size(16.dp))
+                            Text(error, style = MaterialTheme.typography.bodySmall, color = ErrorRed, modifier = Modifier.weight(1f))
                         }
                     }
                 }
 
-                // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-                // CHAT HISTORY TOGGLE PANEL
-                // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
                 ChatHistoryTogglePanel(
                     expanded = showHistoryPanel,
                     sessions = sessions,
@@ -365,26 +264,14 @@ fun ChatScreen(
                     onNewChat = { viewModel.startNewChat() }
                 )
 
-                // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-                // ATTACHED FILES ROW
-                // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
                 if (attachedFiles.isNotEmpty()) {
-                    Surface(
-                        modifier = Modifier.fillMaxWidth(),
-                        color = ShadowBlackCard,
-                        border = BorderStroke(0.5.dp, BorderGrayDark)
-                    ) {
+                    Surface(modifier = Modifier.fillMaxWidth(), color = ShadowBlackCard, border = BorderStroke(0.5.dp, BorderGrayDark)) {
                         Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 12.dp, vertical = 6.dp),
+                            modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 6.dp),
                             horizontalArrangement = Arrangement.spacedBy(6.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            LazyRow(
-                                modifier = Modifier.weight(1f),
-                                horizontalArrangement = Arrangement.spacedBy(6.dp)
-                            ) {
+                            LazyRow(modifier = Modifier.weight(1f), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                                 items(attachedFiles.toList(), key = { it.id }) { file ->
                                     Card(
                                         modifier = Modifier.width(110.dp),
@@ -397,115 +284,66 @@ fun ChatScreen(
                                             horizontalArrangement = Arrangement.spacedBy(4.dp),
                                             verticalAlignment = Alignment.CenterVertically
                                         ) {
-                                            Text(text = file.icon, fontSize = 12.sp)
+                                            Text(file.icon, fontSize = 12.sp)
                                             Column(modifier = Modifier.weight(1f)) {
-                                                Text(
-                                                    text = file.fileName,
-                                                    fontSize = 9.sp,
-                                                    color = MilkyWhiteText,
-                                                    maxLines = 1,
-                                                    overflow = TextOverflow.Ellipsis
-                                                )
-                                                Text(
-                                                    text = file.formattedSize,
-                                                    fontSize = 8.sp,
-                                                    color = MutedGrayDark,
-                                                    fontFamily = FontFamily.Monospace
-                                                )
+                                                Text(file.fileName, fontSize = 9.sp, color = MilkyWhiteText, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                                                Text(file.formattedSize, fontSize = 8.sp, color = MutedGrayDark, fontFamily = FontFamily.Monospace)
                                             }
-                                            IconButton(
-                                                onClick = { FileUploadManager.removeFile(file.id) },
-                                                modifier = Modifier.size(16.dp)
-                                            ) {
-                                                Icon(
-                                                    imageVector = Icons.Rounded.Close,
-                                                    contentDescription = "Remove",
-                                                    tint = MutedGrayDark,
-                                                    modifier = Modifier.size(10.dp)
-                                                )
+                                            IconButton(onClick = { FileUploadManager.removeFile(file.id) }, modifier = Modifier.size(16.dp)) {
+                                                Icon(Icons.Rounded.Close, "Remove", tint = MutedGrayDark, modifier = Modifier.size(10.dp))
                                             }
                                         }
                                     }
                                 }
                             }
-                            IconButton(
-                                onClick = { FileUploadManager.clearAll() },
-                                modifier = Modifier.size(28.dp)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Rounded.ClearAll,
-                                    contentDescription = "Clear all",
-                                    tint = MutedGrayDark,
-                                    modifier = Modifier.size(16.dp)
-                                )
+                            IconButton(onClick = { FileUploadManager.clearAll() }, modifier = Modifier.size(28.dp)) {
+                                Icon(Icons.Rounded.ClearAll, "Clear all", tint = MutedGrayDark, modifier = Modifier.size(16.dp))
                             }
                         }
                     }
                 }
 
-                // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-                // BOTTOM INPUT BAR
-                // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-                Surface(
-                    modifier = Modifier.fillMaxWidth(),
-                    color = MaterialTheme.colorScheme.background,
-                    shadowElevation = 12.dp
-                ) {
-                    Column(
-                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
-                    ) {
+                Surface(modifier = Modifier.fillMaxWidth(), color = MaterialTheme.colorScheme.background, shadowElevation = 12.dp) {
+                    Column(modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)) {
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.spacedBy(6.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            FileUploadBar(
-                                onFilesChanged = {},
-                                enabled = !isGenerating,
-                                compact = true
-                            )
+                            FileUploadBar(onFilesChanged = {}, enabled = !isGenerating, compact = true)
 
                             OutlinedTextField(
                                 value = inputPrompt,
                                 onValueChange = { inputPrompt = it },
                                 modifier = Modifier.weight(1f),
-                                placeholder = {
-                                    Text(
-                                        text = "Harmonize your thoughts...",
-                                        color = MutedGrayDark.copy(alpha = 0.5f),
-                                        fontSize = 13.sp
-                                    )
-                                },
+                                placeholder = { Text("Harmonize your thoughts...", color = MutedGrayDark.copy(alpha = 0.5f), fontSize = 13.sp) },
                                 shape = RoundedCornerShape(24.dp),
                                 colors = OutlinedTextFieldDefaults.colors(
-                                    focusedBorderColor = BalanceGold.copy(alpha = 0.4f),
-                                    unfocusedBorderColor = BorderGrayDark,
-                                    focusedContainerColor = ShadowBlackCard,
-                                    unfocusedContainerColor = ShadowBlackCard,
-                                    cursorColor = BalanceGold,
-                                    focusedTextColor = MilkyWhiteText,
-                                    unfocusedTextColor = MilkyWhiteText
+                                    focusedBorderColor = BalanceGold.copy(alpha = 0.4f), unfocusedBorderColor = BorderGrayDark,
+                                    focusedContainerColor = ShadowBlackCard, unfocusedContainerColor = ShadowBlackCard,
+                                    cursorColor = BalanceGold, focusedTextColor = MilkyWhiteText, unfocusedTextColor = MilkyWhiteText
                                 ),
                                 maxLines = 3,
                                 textStyle = MaterialTheme.typography.bodyMedium
                             )
 
+                            val canSend = (inputPrompt.isNotBlank() || attachedFiles.isNotEmpty()) && !isGenerating
                             IconButton(
-                                onClick = onSendClick,
-                                enabled = (inputPrompt.isNotBlank() || attachedFiles.isNotEmpty()) && !isGenerating,
+                                onClick = {
+                                    if (canSend) {
+                                        viewModel.sendMessage(inputPrompt)
+                                        inputPrompt = ""
+                                        focusManager.clearFocus()
+                                    }
+                                },
+                                enabled = canSend,
                                 modifier = Modifier.size(40.dp)
                             ) {
-                                Icon(
-                                    imageVector = Icons.AutoMirrored.Rounded.Send,
-                                    contentDescription = "Send",
-                                    tint = if ((inputPrompt.isNotBlank() || attachedFiles.isNotEmpty()) && !isGenerating)
-                                        BalanceGold else MutedGrayDark.copy(alpha = 0.3f),
-                                    modifier = Modifier.size(20.dp)
-                                )
+                                Icon(Icons.AutoMirrored.Rounded.Send, "Send", tint = if (canSend) BalanceGold else MutedGrayDark.copy(alpha = 0.3f), modifier = Modifier.size(20.dp))
                             }
                         }
 
-                        Spacer(modifier = Modifier.height(4.dp))
+                        Spacer(Modifier.height(4.dp))
 
                         Row(
                             modifier = Modifier.fillMaxWidth(),
@@ -513,49 +351,22 @@ fun ChatScreen(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             AssistChip(
-                                onClick = onDeepThinkingToggle,
-                                label = {
-                                    Text(
-                                        text = "Deep Think",
-                                        fontSize = 10.sp,
-                                        fontWeight = if (isDeepThinkingEnabled) FontWeight.Bold else FontWeight.Normal
-                                    )
-                                },
-                                leadingIcon = {
-                                    Icon(
-                                        imageVector = Icons.Rounded.Psychology,
-                                        contentDescription = null,
-                                        modifier = Modifier.size(12.dp),
-                                        tint = if (isDeepThinkingEnabled) BalanceGold else MutedGrayDark
-                                    )
-                                },
-                                colors = AssistChipDefaults.assistChipColors(
-                                    containerColor = if (isDeepThinkingEnabled) BalanceGold.copy(alpha = 0.12f) else Color.Transparent,
-                                    labelColor = if (isDeepThinkingEnabled) BalanceGold else MutedGrayDark
-                                ),
-                                border = AssistChipDefaults.assistChipBorder(
-                                    borderColor = if (isDeepThinkingEnabled) BalanceGold.copy(alpha = 0.3f) else BorderGrayDark,
-                                    enabled = true
-                                ),
+                                onClick = { viewModel.isDeepThinkingEnabled.value = !viewModel.isDeepThinkingEnabled.value },
+                                label = { Text("Deep Think", fontSize = 10.sp, fontWeight = if (isDeepThinkingEnabled) FontWeight.Bold else FontWeight.Normal) },
+                                leadingIcon = { Icon(Icons.Rounded.Psychology, null, Modifier.size(12.dp), tint = if (isDeepThinkingEnabled) BalanceGold else MutedGrayDark) },
+                                colors = AssistChipDefaults.assistChipColors(containerColor = if (isDeepThinkingEnabled) BalanceGold.copy(alpha = 0.12f) else Color.Transparent, labelColor = if (isDeepThinkingEnabled) BalanceGold else MutedGrayDark),
+                                border = AssistChipDefaults.assistChipBorder(borderColor = if (isDeepThinkingEnabled) BalanceGold.copy(alpha = 0.3f) else BorderGrayDark, enabled = true),
                                 modifier = Modifier.height(28.dp)
                             )
 
-                            IconButton(
-                                onClick = onMicClick,
-                                modifier = Modifier.size(28.dp)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Rounded.Mic,
-                                    contentDescription = "Voice input",
-                                    tint = MutedGrayDark,
-                                    modifier = Modifier.size(16.dp)
-                                )
+                            IconButton(onClick = { viewModel.isListening.value = true }, modifier = Modifier.size(28.dp)) {
+                                Icon(Icons.Rounded.Mic, "Voice", tint = MutedGrayDark, modifier = Modifier.size(16.dp))
                             }
 
-                            Spacer(modifier = Modifier.weight(1f))
+                            Spacer(Modifier.weight(1f))
 
                             Text(
-                                text = if (isGenerating) "Generating..." else "Ready",
+                                if (isGenerating) "Generating..." else "Ready",
                                 fontSize = 9.sp,
                                 color = if (isGenerating) BalanceGold else MutedGrayDark.copy(alpha = 0.4f)
                             )
@@ -564,9 +375,6 @@ fun ChatScreen(
                 }
             }
 
-            // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-            // VOICE INPUT OVERLAY
-            // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
             if (isListening) {
                 VoiceInputOverlay(
                     onDismiss = { viewModel.isListening.value = false },
@@ -599,204 +407,66 @@ private fun ChatHistoryTogglePanel(
     onNewChat: () -> Unit
 ) {
     Column(modifier = Modifier.fillMaxWidth()) {
-        Surface(
-            onClick = onToggle,
-            modifier = Modifier.fillMaxWidth(),
-            color = ShadowBlackCard,
-            border = BorderStroke(0.5.dp, BorderGrayDark)
-        ) {
+        Surface(onClick = onToggle, modifier = Modifier.fillMaxWidth(), color = ShadowBlackCard, border = BorderStroke(0.5.dp, BorderGrayDark)) {
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 10.dp),
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 10.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        imageVector = Icons.Rounded.ChatBubble,
-                        contentDescription = null,
-                        tint = BalanceGold,
-                        modifier = Modifier.size(16.dp)
-                    )
-                    Text(
-                        text = "Troc Conversations",
-                        fontWeight = FontWeight.SemiBold,
-                        fontSize = 12.sp,
-                        color = MilkyWhiteText
-                    )
-                    Surface(
-                        shape = RoundedCornerShape(8.dp),
-                        color = BalanceGold.copy(alpha = 0.15f)
-                    ) {
-                        Text(
-                            text = "${sessions.size}",
-                            fontSize = 10.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = BalanceGold,
-                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
-                        )
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Rounded.ChatBubble, null, tint = BalanceGold, modifier = Modifier.size(16.dp))
+                    Text("Troc Conversations", fontWeight = FontWeight.SemiBold, fontSize = 12.sp, color = MilkyWhiteText)
+                    Surface(shape = RoundedCornerShape(8.dp), color = BalanceGold.copy(alpha = 0.15f)) {
+                        Text("${sessions.size}", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = BalanceGold, modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp))
                     }
                 }
-                Icon(
-                    imageVector = if (expanded) Icons.Rounded.KeyboardArrowDown else Icons.Rounded.KeyboardArrowUp,
-                    contentDescription = "Toggle history",
-                    tint = MutedGrayDark,
-                    modifier = Modifier.size(20.dp)
-                )
+                Icon(if (expanded) Icons.Rounded.KeyboardArrowDown else Icons.Rounded.KeyboardArrowUp, "Toggle", tint = MutedGrayDark, modifier = Modifier.size(20.dp))
             }
         }
 
         AnimatedVisibility(
             visible = expanded,
-            enter = expandVertically(animationSpec = tween(300, easing = FastOutSlowInEasing)) + fadeIn(animationSpec = tween(300)),
-            exit = shrinkVertically(animationSpec = tween(300, easing = FastOutSlowInEasing)) + fadeOut(animationSpec = tween(300))
+            enter = expandVertically(tween(300, easing = FastOutSlowInEasing)) + fadeIn(tween(300)),
+            exit = shrinkVertically(tween(300, easing = FastOutSlowInEasing)) + fadeOut(tween(300))
         ) {
-            Surface(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .heightIn(max = 320.dp),
-                color = ShadowBlack,
-                border = BorderStroke(0.5.dp, BorderGrayDark)
-            ) {
+            Surface(modifier = Modifier.fillMaxWidth().heightIn(max = 320.dp), color = ShadowBlack, border = BorderStroke(0.5.dp, BorderGrayDark)) {
                 if (sessions.isEmpty()) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(32.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Rounded.Inbox,
-                                contentDescription = null,
-                                tint = MutedGrayDark.copy(alpha = 0.3f),
-                                modifier = Modifier.size(36.dp)
-                            )
-                            Text(
-                                text = "No saved conversations",
-                                fontSize = 13.sp,
-                                color = MutedGrayDark.copy(alpha = 0.5f)
-                            )
-                            Text(
-                                text = "Start a new chat to begin",
-                                fontSize = 11.sp,
-                                color = MutedGrayDark.copy(alpha = 0.3f)
-                            )
+                    Box(Modifier.fillMaxWidth().padding(32.dp), Alignment.Center) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Icon(Icons.Rounded.Inbox, null, tint = MutedGrayDark.copy(alpha = 0.3f), modifier = Modifier.size(36.dp))
+                            Text("No saved conversations", fontSize = 13.sp, color = MutedGrayDark.copy(alpha = 0.5f))
+                            Text("Start a new chat to begin", fontSize = 11.sp, color = MutedGrayDark.copy(alpha = 0.3f))
                         }
                     }
                 } else {
-                    LazyColumn(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(horizontal = 8.dp, vertical = 4.dp),
-                        verticalArrangement = Arrangement.spacedBy(4.dp)
-                    ) {
+                    LazyColumn(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp, vertical = 4.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                         items(sessions, key = { it.id }) { session ->
                             val isActive = session.id == activeSessionId
                             Card(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clickable { onContinueSession(session.id) },
+                                modifier = Modifier.fillMaxWidth().clickable { onContinueSession(session.id) },
                                 shape = RoundedCornerShape(10.dp),
-                                colors = CardDefaults.cardColors(
-                                    containerColor = if (isActive) BalanceGold.copy(alpha = 0.08f) else Color.Transparent
-                                ),
+                                colors = CardDefaults.cardColors(containerColor = if (isActive) BalanceGold.copy(alpha = 0.08f) else Color.Transparent),
                                 border = if (isActive) BorderStroke(0.5.dp, BalanceGold.copy(alpha = 0.2f)) else null
                             ) {
                                 Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(horizontal = 12.dp, vertical = 8.dp),
+                                    modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 8.dp),
                                     horizontalArrangement = Arrangement.spacedBy(10.dp),
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    Icon(
-                                        imageVector = if (isActive) Icons.Rounded.ChatBubble else Icons.Rounded.ChatBubbleOutline,
-                                        contentDescription = null,
-                                        tint = if (isActive) BalanceGold else MutedGrayDark,
-                                        modifier = Modifier.size(16.dp)
-                                    )
+                                    Icon(if (isActive) Icons.Rounded.ChatBubble else Icons.Rounded.ChatBubbleOutline, null, tint = if (isActive) BalanceGold else MutedGrayDark, modifier = Modifier.size(16.dp))
                                     Column(modifier = Modifier.weight(1f)) {
-                                        Text(
-                                            text = session.displayTitle,
-                                            fontWeight = if (isActive) FontWeight.Bold else FontWeight.Medium,
-                                            fontSize = 13.sp,
-                                            color = if (isActive) BalanceGold else MilkyWhiteText,
-                                            maxLines = 1,
-                                            overflow = TextOverflow.Ellipsis
-                                        )
-                                        Row(
-                                            horizontalArrangement = Arrangement.spacedBy(6.dp),
-                                            verticalAlignment = Alignment.CenterVertically
-                                        ) {
-                                            Text(
-                                                text = "${session.messageCount} msgs",
-                                                fontSize = 10.sp,
-                                                color = MutedGrayDark
-                                            )
-                                            Text(
-                                                text = "•",
-                                                fontSize = 10.sp,
-                                                color = MutedGrayDark
-                                            )
-                                            Text(
-                                                text = session.formattedDate,
-                                                fontSize = 10.sp,
-                                                color = MutedGrayDark
-                                            )
-                                            if (session.modelUsed.isNotBlank()) {
-                                                Text(
-                                                    text = "•",
-                                                    fontSize = 10.sp,
-                                                    color = MutedGrayDark
-                                                )
-                                                Text(
-                                                    text = session.modelDisplayName,
-                                                    fontSize = 10.sp,
-                                                    color = MutedGrayDark.copy(alpha = 0.6f),
-                                                    maxLines = 1,
-                                                    overflow = TextOverflow.Ellipsis
-                                                )
-                                            }
+                                        Text(session.displayTitle, fontWeight = if (isActive) FontWeight.Bold else FontWeight.Medium, fontSize = 13.sp, color = if (isActive) BalanceGold else MilkyWhiteText, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                                        Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
+                                            Text("${session.messageCount} msgs", fontSize = 10.sp, color = MutedGrayDark)
+                                            Text("•", fontSize = 10.sp, color = MutedGrayDark)
+                                            Text(session.formattedDate, fontSize = 10.sp, color = MutedGrayDark)
+                                            if (session.modelUsed.isNotBlank()) { Text("•", fontSize = 10.sp, color = MutedGrayDark); Text(session.modelDisplayName, fontSize = 10.sp, color = MutedGrayDark.copy(alpha = 0.6f), maxLines = 1, overflow = TextOverflow.Ellipsis) }
                                         }
-                                        if (session.hasPersonality) {
-                                            Text(
-                                                text = "${session.personalityName}",
-                                                fontSize = 9.sp,
-                                                color = MutedGrayDark.copy(alpha = 0.5f)
-                                            )
-                                        }
+                                        if (session.hasPersonality) Text(session.personalityName, fontSize = 9.sp, color = MutedGrayDark.copy(alpha = 0.5f))
                                     }
                                     Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
-                                        IconButton(
-                                            onClick = { onRenameSession(session.id, session.title) },
-                                            modifier = Modifier.size(28.dp)
-                                        ) {
-                                            Icon(
-                                                imageVector = Icons.Rounded.Edit,
-                                                contentDescription = "Rename",
-                                                tint = MutedGrayDark,
-                                                modifier = Modifier.size(14.dp)
-                                            )
-                                        }
-                                        IconButton(
-                                            onClick = { onDeleteSession(session.id) },
-                                            modifier = Modifier.size(28.dp)
-                                        ) {
-                                            Icon(
-                                                imageVector = Icons.Rounded.Delete,
-                                                contentDescription = "Delete",
-                                                tint = MutedGrayDark.copy(alpha = 0.5f),
-                                                modifier = Modifier.size(14.dp)
-                                            )
-                                        }
+                                        IconButton(onClick = { onRenameSession(session.id, session.title) }, modifier = Modifier.size(28.dp)) { Icon(Icons.Rounded.Edit, "Rename", tint = MutedGrayDark, modifier = Modifier.size(14.dp)) }
+                                        IconButton(onClick = { onDeleteSession(session.id) }, modifier = Modifier.size(28.dp)) { Icon(Icons.Rounded.Delete, "Delete", tint = MutedGrayDark.copy(alpha = 0.5f), modifier = Modifier.size(14.dp)) }
                                     }
                                 }
                             }
@@ -822,175 +492,55 @@ private fun DashboardIntro(
 ) {
     var customPrompt by remember { mutableStateOf("") }
     val suggestions = listOf(
-        "Build a meditation app" to "🧘",
-        "Create a video script" to "🎬",
-        "Write a poem about duality" to "✍️",
-        "Explain quantum computing" to "⚛️",
-        "Generate a workout plan" to "💪",
-        "Design a logo concept" to "🎨"
+        "Build a meditation app" to "🧘", "Create a video script" to "🎬",
+        "Write a poem about duality" to "✍️", "Explain quantum computing" to "⚛️",
+        "Generate a workout plan" to "💪", "Design a logo concept" to "🎨"
     )
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Spacer(modifier = Modifier.height(40.dp))
-
+    Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(24.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+        Spacer(Modifier.height(40.dp))
         YinYangLogo(size = 100.dp, isSpinning = isGenerating, hexagonal = true)
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        Text(
-            text = "Troc Agent",
-            fontWeight = FontWeight.ExtraBold,
-            fontSize = 28.sp,
-            color = MaterialTheme.colorScheme.onBackground,
-            textAlign = TextAlign.Center
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Surface(
-                shape = RoundedCornerShape(12.dp),
-                color = Color(selectedModel.category.color).copy(alpha = 0.1f),
-                border = BorderStroke(0.5.dp, Color(selectedModel.category.color).copy(alpha = 0.3f))
-            ) {
-                Text(
-                    text = "${selectedPersonality.emoji} ${selectedModel.displayName}",
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.Medium,
-                    color = MilkyWhiteText,
-                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
-                )
+        Spacer(Modifier.height(24.dp))
+        Text("Troc Agent", fontWeight = FontWeight.ExtraBold, fontSize = 28.sp, color = MaterialTheme.colorScheme.onBackground, textAlign = TextAlign.Center)
+        Spacer(Modifier.height(8.dp))
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+            Surface(shape = RoundedCornerShape(12.dp), color = Color(selectedModel.category.color).copy(alpha = 0.1f), border = BorderStroke(0.5.dp, Color(selectedModel.category.color).copy(alpha = 0.3f))) {
+                Text("${selectedPersonality.emoji} ${selectedModel.displayName}", fontSize = 11.sp, fontWeight = FontWeight.Medium, color = MilkyWhiteText, modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp))
             }
-            Surface(
-                shape = RoundedCornerShape(12.dp),
-                color = selectedPersonality.color.copy(alpha = 0.1f),
-                border = BorderStroke(0.5.dp, selectedPersonality.color.copy(alpha = 0.3f))
-            ) {
-                Text(
-                    text = selectedPersonality.name,
-                    fontSize = 11.sp,
-                    color = MilkyWhiteText,
-                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
-                )
+            Surface(shape = RoundedCornerShape(12.dp), color = selectedPersonality.color.copy(alpha = 0.1f), border = BorderStroke(0.5.dp, selectedPersonality.color.copy(alpha = 0.3f))) {
+                Text(selectedPersonality.name, fontSize = 11.sp, color = MilkyWhiteText, modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp))
             }
         }
-
-        Spacer(modifier = Modifier.height(12.dp))
-
-        Text(
-            text = "Your harmonized AI companion. Build apps, generate videos,\nwrite code, or explore ideas — all in perfect balance.",
-            fontSize = 13.sp,
-            color = MutedGrayDark,
-            textAlign = TextAlign.Center,
-            lineHeight = 20.sp
-        )
-
-        Spacer(modifier = Modifier.height(32.dp))
-
+        Spacer(Modifier.height(12.dp))
+        Text("Your harmonized AI companion. Build apps, generate videos,\nwrite code, or explore ideas — all in perfect balance.", fontSize = 13.sp, color = MutedGrayDark, textAlign = TextAlign.Center, lineHeight = 20.sp)
+        Spacer(Modifier.height(32.dp))
         OutlinedTextField(
-            value = customPrompt,
-            onValueChange = { customPrompt = it },
-            modifier = Modifier.fillMaxWidth(),
-            placeholder = {
-                Text(
-                    text = "Describe what you want to create...",
-                    color = MutedGrayDark.copy(alpha = 0.5f),
-                    fontSize = 14.sp
-                )
-            },
-            trailingIcon = {
-                if (customPrompt.isNotBlank()) {
-                    IconButton(onClick = { onPromptSubmit(customPrompt); customPrompt = "" }) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Rounded.Send,
-                            contentDescription = "Send",
-                            tint = BalanceGold
-                        )
-                    }
-                }
-            },
+            value = customPrompt, onValueChange = { customPrompt = it }, modifier = Modifier.fillMaxWidth(),
+            placeholder = { Text("Describe what you want to create...", color = MutedGrayDark.copy(alpha = 0.5f), fontSize = 14.sp) },
+            trailingIcon = { if (customPrompt.isNotBlank()) IconButton(onClick = { onPromptSubmit(customPrompt); customPrompt = "" }) { Icon(Icons.AutoMirrored.Rounded.Send, "Send", tint = BalanceGold) } },
             shape = RoundedCornerShape(16.dp),
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = BalanceGold,
-                unfocusedBorderColor = BorderGrayDark,
-                focusedContainerColor = ShadowBlackCard,
-                unfocusedContainerColor = ShadowBlackCard,
-                cursorColor = BalanceGold,
-                focusedTextColor = MilkyWhiteText,
-                unfocusedTextColor = MilkyWhiteText
-            ),
-            singleLine = true,
-            textStyle = MaterialTheme.typography.bodyMedium
+            colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = BalanceGold, unfocusedBorderColor = BorderGrayDark, focusedContainerColor = ShadowBlackCard, unfocusedContainerColor = ShadowBlackCard, cursorColor = BalanceGold, focusedTextColor = MilkyWhiteText, unfocusedTextColor = MilkyWhiteText),
+            singleLine = true, textStyle = MaterialTheme.typography.bodyMedium
         )
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        Text(
-            text = "Try asking...",
-            fontSize = 11.sp,
-            fontWeight = FontWeight.SemiBold,
-            color = MutedGrayDark,
-            letterSpacing = 1.sp,
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        Spacer(modifier = Modifier.height(12.dp))
-
+        Spacer(Modifier.height(24.dp))
+        Text("Try asking...", fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = MutedGrayDark, letterSpacing = 1.sp, modifier = Modifier.fillMaxWidth())
+        Spacer(Modifier.height(12.dp))
         suggestions.chunked(2).forEach { row ->
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                row.forEach { (text, emoji) ->
-                    SuggestionChip(
-                        emoji = emoji,
-                        text = text,
-                        onClick = { onSuggestionClick(text) },
-                        modifier = Modifier.weight(1f)
-                    )
-                }
-                if (row.size < 2) Spacer(modifier = Modifier.weight(1f))
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                row.forEach { (text, emoji) -> SuggestionChip(emoji, text, onClick = { onSuggestionClick(text) }, modifier = Modifier.weight(1f)) }
+                if (row.size < 2) Spacer(Modifier.weight(1f))
             }
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(Modifier.height(8.dp))
         }
     }
 }
 
 @Composable
-private fun SuggestionChip(
-    emoji: String,
-    text: String,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Surface(
-        modifier = modifier.clickable { onClick() },
-        shape = RoundedCornerShape(12.dp),
-        color = ShadowBlackCard,
-        border = BorderStroke(0.5.dp, BorderGrayDark)
-    ) {
-        Row(
-            modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(text = emoji, fontSize = 14.sp)
-            Text(
-                text = text,
-                fontSize = 12.sp,
-                color = MilkyWhiteText.copy(alpha = 0.8f),
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
+private fun SuggestionChip(emoji: String, text: String, onClick: () -> Unit, modifier: Modifier = Modifier) {
+    Surface(modifier = modifier.clickable { onClick() }, shape = RoundedCornerShape(12.dp), color = ShadowBlackCard, border = BorderStroke(0.5.dp, BorderGrayDark)) {
+        Row(modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+            Text(emoji, fontSize = 14.sp)
+            Text(text, fontSize = 12.sp, color = MilkyWhiteText.copy(alpha = 0.8f), maxLines = 1, overflow = TextOverflow.Ellipsis)
         }
     }
 }
@@ -1000,226 +550,60 @@ private fun SuggestionChip(
 // ═══════════════════════════════════════════════════════════════
 
 @Composable
-private fun MessageBubble(
-    message: ChatMessage,
-    isLightForce: Boolean,
-    modifier: Modifier = Modifier
-) {
+private fun MessageBubble(message: ChatMessage, isLightForce: Boolean, modifier: Modifier = Modifier) {
     val isUser = message.role == "user"
     val alignment = if (isUser) Alignment.End else Alignment.Start
-    val bubbleColor = if (isUser) {
-        if (isLightForce) ShadowBlack else BalanceGold.copy(alpha = 0.15f)
-    } else {
-        if (isLightForce) MilkyWhiteCard else ShadowBlackCard
-    }
-    val bubbleShape = if (isUser) RoundedCornerShape(16.dp, 4.dp, 16.dp, 16.dp)
-    else RoundedCornerShape(4.dp, 16.dp, 16.dp, 16.dp)
+    val bubbleColor = if (isUser) { if (isLightForce) ShadowBlack else BalanceGold.copy(alpha = 0.15f) } else { if (isLightForce) MilkyWhiteCard else ShadowBlackCard }
+    val bubbleShape = if (isUser) RoundedCornerShape(16.dp, 4.dp, 16.dp, 16.dp) else RoundedCornerShape(4.dp, 16.dp, 16.dp, 16.dp)
+    val resolvedModel = remember(message.modelUsed) { if (message.modelUsed != null) try { GeminiModel.fromModelId(message.modelUsed) } catch (_: Exception) { null } else null }
+    val resolvedPersonality = remember(message.personalityUsed) { if (message.personalityUsed != null) try { PersonalityProfile.fromId(message.personalityUsed) } catch (_: Exception) { null } else null }
 
-    val resolvedModel = remember(message.modelUsed) {
-        if (message.modelUsed != null) {
-            try { GeminiModel.fromModelId(message.modelUsed) } catch (_: Exception) { null }
-        } else null
-    }
-    val resolvedPersonality = remember(message.personalityUsed) {
-        if (message.personalityUsed != null) {
-            try { PersonalityProfile.fromId(message.personalityUsed) } catch (_: Exception) { null }
-        } else null
-    }
-
-    Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(vertical = 4.dp),
-        horizontalAlignment = alignment
-    ) {
-        if (!isUser && message.reasoning != null) {
-            ReasoningCard(reasoning = message.reasoning, durationMs = message.durationMs)
-            Spacer(modifier = Modifier.height(6.dp))
-        }
-
+    Column(modifier = modifier.fillMaxWidth().padding(vertical = 4.dp), horizontalAlignment = alignment) {
+        if (!isUser && message.reasoning != null) { ReasoningCard(message.reasoning, message.durationMs); Spacer(Modifier.height(6.dp)) }
         if (!isUser && (resolvedModel != null || resolvedPersonality != null)) {
-            Row(
-                modifier = Modifier.padding(bottom = 4.dp, start = 4.dp),
-                horizontalArrangement = Arrangement.spacedBy(6.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                resolvedModel?.let { model ->
-                    Surface(
-                        shape = RoundedCornerShape(4.dp),
-                        color = Color(model.category.color).copy(alpha = 0.1f)
-                    ) {
-                        Text(
-                            text = model.displayName,
-                            fontSize = 8.sp,
-                            color = MutedGrayDark.copy(alpha = 0.6f),
-                            fontWeight = FontWeight.Medium,
-                            modifier = Modifier.padding(horizontal = 4.dp, vertical = 1.dp)
-                        )
-                    }
-                }
-                resolvedPersonality?.let { personality ->
-                    Text(
-                        text = "${personality.emoji} ${personality.name}",
-                        fontSize = 8.sp,
-                        color = MutedGrayDark.copy(alpha = 0.6f)
-                    )
-                }
+            Row(modifier = Modifier.padding(bottom = 4.dp, start = 4.dp), horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
+                resolvedModel?.let { model -> Surface(shape = RoundedCornerShape(4.dp), color = Color(model.category.color).copy(alpha = 0.1f)) { Text(model.displayName, fontSize = 8.sp, color = MutedGrayDark.copy(alpha = 0.6f), fontWeight = FontWeight.Medium, modifier = Modifier.padding(horizontal = 4.dp, vertical = 1.dp)) } }
+                resolvedPersonality?.let { personality -> Text("${personality.emoji} ${personality.name}", fontSize = 8.sp, color = MutedGrayDark.copy(alpha = 0.6f)) }
             }
         }
-
-        Box(
-            modifier = Modifier
-                .widthIn(max = 320.dp)
-                .clip(bubbleShape)
-                .background(bubbleColor)
-                .border(0.5.dp, if (isUser) BorderGrayDark else BorderGrayDark.copy(alpha = 0.3f), bubbleShape)
-                .padding(horizontal = 14.dp, vertical = 10.dp)
-        ) {
-            Text(
-                text = message.text,
-                color = if (isUser) MilkyWhiteText else MaterialTheme.colorScheme.onSurface,
-                fontSize = 14.sp,
-                lineHeight = 20.sp
-            )
+        Box(Modifier.widthIn(max = 320.dp).clip(bubbleShape).background(bubbleColor).border(0.5.dp, if (isUser) BorderGrayDark else BorderGrayDark.copy(alpha = 0.3f), bubbleShape).padding(horizontal = 14.dp, vertical = 10.dp)) {
+            Text(message.text, color = if (isUser) MilkyWhiteText else MaterialTheme.colorScheme.onSurface, fontSize = 14.sp, lineHeight = 20.sp)
         }
-
-        if (!isUser && message.durationMs != null) {
-            Text(
-                text = "Generated in ${message.durationMs / 1000.0}s",
-                fontSize = 10.sp,
-                color = MutedGrayDark,
-                modifier = Modifier.padding(top = 2.dp, start = 8.dp)
-            )
-        }
+        if (!isUser && message.durationMs != null) Text("Generated in ${message.durationMs / 1000.0}s", fontSize = 10.sp, color = MutedGrayDark, modifier = Modifier.padding(top = 2.dp, start = 8.dp))
     }
 }
 
 @Composable
-private fun ReasoningCard(
-    reasoning: String,
-    durationMs: Long?,
-    modifier: Modifier = Modifier
-) {
+private fun ReasoningCard(reasoning: String, durationMs: Long?, modifier: Modifier = Modifier) {
     var expanded by remember { mutableStateOf(false) }
-
-    Card(
-        modifier = modifier
-            .widthIn(max = 300.dp)
-            .clickable { expanded = !expanded },
-        shape = RoundedCornerShape(10.dp),
-        colors = CardDefaults.cardColors(containerColor = BalanceGold.copy(alpha = 0.05f)),
-        border = BorderStroke(0.5.dp, BalanceGold.copy(alpha = 0.2f))
-    ) {
-        Column(modifier = Modifier.padding(10.dp)) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(6.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(
-                    imageVector = Icons.Rounded.Psychology,
-                    contentDescription = null,
-                    tint = BalanceGold,
-                    modifier = Modifier.size(14.dp)
-                )
-                Text(
-                    text = "Deep Thought Process",
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = BalanceGold
-                )
-                if (durationMs != null) {
-                    Text(
-                        text = "• ${durationMs / 1000.0}s",
-                        fontSize = 10.sp,
-                        color = MutedGrayDark
-                    )
-                }
-                Spacer(modifier = Modifier.weight(1f))
-                Icon(
-                    imageVector = if (expanded) Icons.Rounded.ExpandLess else Icons.Rounded.ExpandMore,
-                    contentDescription = "Toggle",
-                    tint = MutedGrayDark,
-                    modifier = Modifier.size(16.dp)
-                )
+    Card(modifier = modifier.widthIn(max = 300.dp).clickable { expanded = !expanded }, shape = RoundedCornerShape(10.dp), colors = CardDefaults.cardColors(containerColor = BalanceGold.copy(alpha = 0.05f)), border = BorderStroke(0.5.dp, BalanceGold.copy(alpha = 0.2f))) {
+        Column(Modifier.padding(10.dp)) {
+            Row(Modifier.fillMaxWidth(), Arrangement.spacedBy(6.dp), Alignment.CenterVertically) {
+                Icon(Icons.Rounded.Psychology, null, tint = BalanceGold, modifier = Modifier.size(14.dp))
+                Text("Deep Thought Process", fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = BalanceGold)
+                if (durationMs != null) Text("• ${durationMs / 1000.0}s", fontSize = 10.sp, color = MutedGrayDark)
+                Spacer(Modifier.weight(1f))
+                Icon(if (expanded) Icons.Rounded.ExpandLess else Icons.Rounded.ExpandMore, "Toggle", tint = MutedGrayDark, modifier = Modifier.size(16.dp))
             }
-            AnimatedVisibility(
-                visible = expanded,
-                enter = expandVertically() + fadeIn(),
-                exit = shrinkVertically() + fadeOut()
-            ) {
-                Text(
-                    text = reasoning,
-                    fontSize = 12.sp,
-                    color = MutedGrayDark,
-                    lineHeight = 18.sp,
-                    fontStyle = FontStyle.Italic,
-                    modifier = Modifier.padding(top = 6.dp)
-                )
+            AnimatedVisibility(expanded, enter = expandVertically() + fadeIn(), exit = shrinkVertically() + fadeOut()) {
+                Text(reasoning, fontSize = 12.sp, color = MutedGrayDark, lineHeight = 18.sp, fontStyle = FontStyle.Italic, modifier = Modifier.padding(top = 6.dp))
             }
         }
     }
 }
 
 @Composable
-private fun ReasoningCardLive(
-    reasoning: String,
-    isStreaming: Boolean,
-    modifier: Modifier = Modifier
-) {
-    val shimmerAlpha by rememberInfiniteTransition(label = "shimmer").animateFloat(
-        0.3f, 0.6f,
-        infiniteRepeatable(tween(1000, easing = FastOutSlowInEasing), RepeatMode.Reverse),
-        label = "shimmer"
-    )
-
-    Card(
-        modifier = modifier
-            .widthIn(max = 300.dp)
-            .padding(start = 8.dp, top = 4.dp),
-        shape = RoundedCornerShape(10.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = BalanceGold.copy(alpha = if (isStreaming) shimmerAlpha * 0.1f else 0.05f)
-        ),
-        border = BorderStroke(
-            0.5.dp,
-            BalanceGold.copy(alpha = if (isStreaming) shimmerAlpha else 0.2f)
-        )
-    ) {
-        Column(modifier = Modifier.padding(10.dp)) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(6.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                if (isStreaming) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(12.dp),
-                        color = BalanceGold,
-                        strokeWidth = 1.5.dp
-                    )
-                }
-                Icon(
-                    imageVector = Icons.Rounded.Psychology,
-                    contentDescription = null,
-                    tint = BalanceGold,
-                    modifier = Modifier.size(14.dp)
-                )
-                Text(
-                    text = if (isStreaming) "Thinking..." else "Thought Process",
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = BalanceGold
-                )
+private fun ReasoningCardLive(reasoning: String, isStreaming: Boolean, modifier: Modifier = Modifier) {
+    val shimmerAlpha by rememberInfiniteTransition().animateFloat(0.3f, 0.6f, infiniteRepeatable(tween(1000, easing = FastOutSlowInEasing), RepeatMode.Reverse))
+    Card(modifier = modifier.widthIn(max = 300.dp).padding(start = 8.dp, top = 4.dp), shape = RoundedCornerShape(10.dp), colors = CardDefaults.cardColors(containerColor = BalanceGold.copy(alpha = if (isStreaming) shimmerAlpha * 0.1f else 0.05f)), border = BorderStroke(0.5.dp, BalanceGold.copy(alpha = if (isStreaming) shimmerAlpha else 0.2f))) {
+        Column(Modifier.padding(10.dp)) {
+            Row(Modifier.fillMaxWidth(), Arrangement.spacedBy(6.dp), Alignment.CenterVertically) {
+                if (isStreaming) CircularProgressIndicator(Modifier.size(12.dp), color = BalanceGold, strokeWidth = 1.5.dp)
+                Icon(Icons.Rounded.Psychology, null, tint = BalanceGold, modifier = Modifier.size(14.dp))
+                Text(if (isStreaming) "Thinking..." else "Thought Process", fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = BalanceGold)
             }
-            Spacer(modifier = Modifier.height(6.dp))
-            Text(
-                text = reasoning,
-                fontSize = 12.sp,
-                color = MutedGrayDark,
-                lineHeight = 18.sp,
-                fontStyle = FontStyle.Italic
-            )
+            Spacer(Modifier.height(6.dp))
+            Text(reasoning, fontSize = 12.sp, color = MutedGrayDark, lineHeight = 18.sp, fontStyle = FontStyle.Italic)
         }
     }
 }
@@ -1230,27 +614,9 @@ private fun AssistantThinkingBubble(modifier: Modifier = Modifier) {
     val dot1Alpha by infiniteTransition.animateFloat(0.3f, 1f, infiniteRepeatable(tween(600), RepeatMode.Reverse), label = "dot1")
     val dot2Alpha by infiniteTransition.animateFloat(0.3f, 1f, infiniteRepeatable(tween(600, 200), RepeatMode.Reverse), label = "dot2")
     val dot3Alpha by infiniteTransition.animateFloat(0.3f, 1f, infiniteRepeatable(tween(600, 400), RepeatMode.Reverse), label = "dot3")
-
-    Row(
-        modifier = modifier
-            .padding(start = 8.dp, top = 8.dp)
-            .clip(RoundedCornerShape(4.dp, 16.dp, 16.dp, 16.dp))
-            .background(ShadowBlackCard)
-            .border(0.5.dp, BalanceGold.copy(alpha = 0.2f), RoundedCornerShape(4.dp, 16.dp, 16.dp, 16.dp))
-            .padding(horizontal = 16.dp, vertical = 10.dp),
-        horizontalArrangement = Arrangement.spacedBy(4.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
+    Row(modifier = modifier.padding(start = 8.dp, top = 8.dp).clip(RoundedCornerShape(4.dp, 16.dp, 16.dp, 16.dp)).background(ShadowBlackCard).border(0.5.dp, BalanceGold.copy(alpha = 0.2f), RoundedCornerShape(4.dp, 16.dp, 16.dp, 16.dp)).padding(horizontal = 16.dp, vertical = 10.dp), horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
         YinYangLogo(size = 16.dp, isSpinning = true, hexagonal = true)
-        Spacer(modifier = Modifier.width(4.dp))
-        listOf(dot1Alpha, dot2Alpha, dot3Alpha).forEach { alpha ->
-            Box(
-                modifier = Modifier
-                    .size(5.dp)
-                    .graphicsLayer(alpha = alpha)
-                    .clip(CircleShape)
-                    .background(BalanceGold)
-            )
-        }
+        Spacer(Modifier.width(4.dp))
+        listOf(dot1Alpha, dot2Alpha, dot3Alpha).forEach { alpha -> Box(Modifier.size(5.dp).graphicsLayer(alpha = alpha).clip(CircleShape).background(BalanceGold)) }
     }
 }
