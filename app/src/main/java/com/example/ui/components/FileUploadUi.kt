@@ -1,6 +1,7 @@
 // app/src/main/java/com/example/ui/components/FileUploadUI.kt
 package com.example.ui.components
 
+import androidx.compose.ui.draw.scale
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
