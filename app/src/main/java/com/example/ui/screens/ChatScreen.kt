@@ -26,20 +26,19 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.data.api.GeminiModel
 import com.example.data.database.ChatMessage
-import com.example.ui.components.CodeBlock
-import com.example.ui.components.YinYangLogo
-import com.example.ui.components.VoiceInputOverlay
+import com.example.data.database.ChatSession
+import com.example.data.filemanager.FileUploadManager
+import com.example.data.personality.PersonalityProfile
+import com.example.ui.components.*
 import com.example.ui.theme.*
 import com.example.ui.viewmodel.ChatViewModel
 import kotlinx.coroutines.launch
@@ -62,9 +61,14 @@ fun ChatScreen(
     val isDeepThinkingEnabled by viewModel.isDeepThinkingEnabled.collectAsStateWithLifecycle()
     val errorMessage by viewModel.errorMessage.collectAsStateWithLifecycle()
     val isListening by viewModel.isListening.collectAsStateWithLifecycle()
+    val selectedModel by viewModel.selectedModel.collectAsStateWithLifecycle()
+    val selectedPersonality by viewModel.selectedPersonality.collectAsStateWithLifecycle()
+    val contextTokenCount by viewModel.contextTokenCount.collectAsStateWithLifecycle()
+    val contextUsageFraction by viewModel.contextUsageFraction.collectAsStateWithLifecycle()
 
     var inputPrompt by remember { mutableStateOf("") }
     val listState = rememberLazyListState()
+    val attachedFiles = FileUploadManager.getAttachedFiles()
 
     LaunchedEffect(activeMessages.size, isGenerating) {
         if (activeMessages.isNotEmpty()) {
@@ -75,68 +79,88 @@ fun ChatScreen(
     Scaffold(
         modifier = modifier,
         topBar = {
-            TopAppBar(
-                title = {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center,
-                        modifier = Modifier.fillMaxWidth(0.75f)
-                    ) {
-                        YinYangLogo(
-                            size = 28.dp,
-                            isSpinning = isGenerating,
-                            modifier = Modifier.clickable {
-                                viewModel.sendMessage("☯️ Balance my day with a beautiful Yin-Yang thought!")
-                            }
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Column {
+            Column {
+                TopAppBar(
+                    title = {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            YinYangLogo(
+                                size = 24.dp,
+                                isSpinning = isGenerating,
+                                modifier = Modifier.clickable {
+                                    viewModel.sendMessage("☯️ Balance my day with a beautiful Yin-Yang thought!")
+                                }
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
                             Text(
                                 text = "Troc",
                                 fontWeight = FontWeight.ExtraBold,
-                                style = MaterialTheme.typography.titleLarge,
+                                fontSize = 16.sp,
                                 color = MaterialTheme.colorScheme.onBackground
                             )
-                            if (isDeepThinkingEnabled) {
-                                Text(
-                                    text = "Deep Think Active",
-                                    fontSize = 9.sp,
-                                    color = BalanceGold,
-                                    fontWeight = FontWeight.Medium
-                                )
-                            }
                         }
-                    }
-                },
-                navigationIcon = {
-                    IconButton(
-                        onClick = onMenuClick,
-                        modifier = Modifier.testTag("drawer_toggle_button")
-                    ) {
-                        Icon(
-                            imageVector = Icons.Rounded.Menu,
-                            contentDescription = "Open workspace menu",
-                            tint = MaterialTheme.colorScheme.onBackground
-                        )
-                    }
-                },
-                actions = {
-                    IconButton(
-                        onClick = { viewModel.startNewChat() },
-                        modifier = Modifier.testTag("scaffold_new_chat_button")
-                    ) {
-                        Icon(
-                            imageVector = Icons.Rounded.AddCircleOutline,
-                            contentDescription = "New Balance Chat",
-                            tint = MaterialTheme.colorScheme.onBackground
-                        )
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.background,
-                    scrolledContainerColor = MaterialTheme.colorScheme.background
+                    },
+                    navigationIcon = {
+                        IconButton(
+                            onClick = onMenuClick,
+                            modifier = Modifier.testTag("drawer_toggle_button")
+                        ) {
+                            Icon(Icons.Rounded.Menu, "Menu", tint = MaterialTheme.colorScheme.onBackground)
+                        }
+                    },
+                    actions = {
+                        IconButton(
+                            onClick = { viewModel.startNewChat() },
+                            modifier = Modifier.testTag("scaffold_new_chat_button")
+                        ) {
+                            Icon(Icons.Rounded.AddCircleOutline, "New Chat", tint = MaterialTheme.colorScheme.onBackground)
+                        }
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.background
+                    )
                 )
-            )
+
+                // Model Selector + Personality Selector Row
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 8.dp, vertical = 4.dp),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    ModelSelectorBar(
+                        selectedModel = selectedModel,
+                        onModelSelected = { viewModel.setModel(it) },
+                        modifier = Modifier.weight(1f),
+                        isEnabled = !isGenerating
+                    )
+                    PersonalitySelectorBar(
+                        selectedPersonality = selectedPersonality,
+                        onPersonalitySelected = { viewModel.setPersonality(it) },
+                        modifier = Modifier.weight(1f),
+                        isEnabled = !isGenerating
+                    )
+                }
+
+                // File Upload Bar
+                FileUploadBar(
+                    onFilesChanged = { /* files updated in manager */ },
+                    enabled = !isGenerating
+                )
+
+                // Context Window Indicator
+                if (activeSessionId != null && activeMessages.isNotEmpty()) {
+                    ContextWindowIndicator(
+                        tokenCount = contextTokenCount,
+                        usageFraction = contextUsageFraction,
+                        messageCount = activeMessages.size
+                    )
+                }
+            }
         },
         containerColor = MaterialTheme.colorScheme.background
     ) { innerPadding ->
@@ -154,12 +178,13 @@ fun ChatScreen(
                 ) {
                     if (activeMessages.isEmpty() && activeSessionId == null) {
                         DashboardIntro(
-                            onSuggestionClick = { suggestion -> viewModel.sendMessage(suggestion) },
-                            onPromptSubmit = { prompt ->
-                                inputPrompt = prompt
-                                viewModel.sendMessage(prompt)
+                            onSuggestionClick = { viewModel.sendMessage(it) },
+                            onPromptSubmit = {
+                                viewModel.sendMessage(it)
                             },
-                            isGenerating = isGenerating
+                            isGenerating = isGenerating,
+                            selectedModel = selectedModel,
+                            selectedPersonality = selectedPersonality
                         )
                     } else {
                         LazyColumn(
@@ -186,20 +211,35 @@ fun ChatScreen(
 
                 errorMessage?.let { error -> ErrorBanner(error = error) }
 
+                // Chat History Slider
+                ChatHistorySlider(
+                    sessions = sessions,
+                    activeSessionId = activeSessionId,
+                    activeMessages = activeMessages,
+                    onSessionSelect = { viewModel.selectSession(it) },
+                    onContinueSession = { viewModel.continueSession(it) },
+                    onDeleteSession = { viewModel.deleteSession(it) },
+                    onRenameSession = { id, title -> viewModel.renameSession(id, title) },
+                    onNewChat = { viewModel.startNewChat() }
+                )
+
                 BottomChatControls(
                     prompt = inputPrompt,
                     onPromptChange = { inputPrompt = it },
                     isDeepThinkingEnabled = isDeepThinkingEnabled,
-                    onDeepThinkingToggle = { viewModel.isDeepThinkingEnabled.value = !isDeepThinkingEnabled },
+                    onDeepThinkingToggle = {
+                        viewModel.isDeepThinkingEnabled.value = !isDeepThinkingEnabled
+                    },
                     onSendClick = {
-                        if (inputPrompt.isNotBlank()) {
+                        if (inputPrompt.isNotBlank() || attachedFiles.isNotEmpty()) {
                             viewModel.sendMessage(inputPrompt)
                             inputPrompt = ""
                             focusManager.clearFocus()
                         }
                     },
                     onMicClick = { viewModel.isListening.value = true },
-                    isGenerating = isGenerating
+                    isGenerating = isGenerating,
+                    hasAttachments = attachedFiles.isNotEmpty()
                 )
             }
 
@@ -218,11 +258,66 @@ fun ChatScreen(
 }
 
 @Composable
+private fun ContextWindowIndicator(
+    tokenCount: Int,
+    usageFraction: Float,
+    messageCount: Int
+) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        color = ShadowBlackCard
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 12.dp, vertical = 4.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    "${messageCount} msgs",
+                    fontSize = 9.sp,
+                    color = MutedGrayDark,
+                    fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
+                )
+                Text(
+                    "${(usageFraction * 100).toInt()}% of 1M context",
+                    fontSize = 9.sp,
+                    color = when {
+                        usageFraction > 0.9f -> ErrorRed
+                        usageFraction > 0.7f -> WarningAmber
+                        else -> SuccessGreen
+                    },
+                    fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
+                )
+            }
+            LinearProgressIndicator(
+                progress = { usageFraction },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(2.dp)
+                    .clip(RoundedCornerShape(1.dp)),
+                color = when {
+                    usageFraction > 0.9f -> ErrorRed
+                    usageFraction > 0.7f -> WarningAmber
+                    else -> BalanceGold
+                },
+                trackColor = BorderGrayDark
+            )
+        }
+    }
+}
+
+@Composable
 private fun DashboardIntro(
     onSuggestionClick: (String) -> Unit,
     onPromptSubmit: (String) -> Unit,
     isGenerating: Boolean,
-    modifier: Modifier = Modifier
+    selectedModel: GeminiModel,
+    selectedPersonality: PersonalityProfile
 ) {
     var customPrompt by remember { mutableStateOf("") }
 
@@ -236,37 +331,63 @@ private fun DashboardIntro(
     )
 
     Column(
-        modifier = modifier
+        modifier = Modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
             .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Spacer(modifier = Modifier.height(40.dp))
+        Spacer(modifier = Modifier.height(20.dp))
 
-        YinYangLogo(size = 100.dp, isSpinning = isGenerating)
+        YinYangLogo(size = 80.dp, isSpinning = isGenerating)
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
         Text(
             text = "Troc Agent",
             fontWeight = FontWeight.ExtraBold,
-            fontSize = 28.sp,
+            fontSize = 26.sp,
             color = MaterialTheme.colorScheme.onBackground,
             textAlign = TextAlign.Center
         )
+
+        Spacer(modifier = Modifier.height(4.dp))
+
+        // Active model + personality summary
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Surface(
+                shape = RoundedCornerShape(12.dp),
+                color = selectedModel.category.let { Color(it.color).copy(alpha = 0.1f) },
+                border = BorderStroke(0.5.dp, Color(selectedModel.category.color).copy(alpha = 0.3f))
+            ) {
+                Text(
+                    "${selectedPersonality.emoji} ${selectedModel.displayName}",
+                    fontSize = 10.sp,
+                    color = MilkyWhiteText,
+                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                )
+            }
+            Text(
+                selectedPersonality.name,
+                fontSize = 10.sp,
+                color = MutedGrayDark
+            )
+        }
 
         Spacer(modifier = Modifier.height(8.dp))
 
         Text(
             text = "Your harmonized AI companion. Build apps, generate videos,\nwrite code, or explore ideas — all in perfect balance.",
-            fontSize = 13.sp,
+            fontSize = 12.sp,
             color = MutedGrayDark,
             textAlign = TextAlign.Center,
-            lineHeight = 20.sp
+            lineHeight = 18.sp
         )
 
-        Spacer(modifier = Modifier.height(32.dp))
+        Spacer(modifier = Modifier.height(20.dp))
 
         OutlinedTextField(
             value = customPrompt,
@@ -276,44 +397,30 @@ private fun DashboardIntro(
             trailingIcon = {
                 if (customPrompt.isNotBlank()) {
                     IconButton(onClick = { onPromptSubmit(customPrompt); customPrompt = "" }) {
-                        Icon(Icons.AutoMirrored.Rounded.Send, contentDescription = "Send", tint = BalanceGold)
+                        Icon(Icons.AutoMirrored.Rounded.Send, "Send", tint = BalanceGold)
                     }
                 }
             },
             shape = RoundedCornerShape(16.dp),
             colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = BalanceGold,
-                unfocusedBorderColor = BorderGrayDark,
-                focusedContainerColor = ShadowBlackCard,
-                unfocusedContainerColor = ShadowBlackCard,
-                cursorColor = BalanceGold,
-                focusedTextColor = MilkyWhiteText,
-                unfocusedTextColor = MilkyWhiteText
+                focusedBorderColor = BalanceGold, unfocusedBorderColor = BorderGrayDark,
+                focusedContainerColor = ShadowBlackCard, unfocusedContainerColor = ShadowBlackCard,
+                cursorColor = BalanceGold, focusedTextColor = MilkyWhiteText, unfocusedTextColor = MilkyWhiteText
             ),
             singleLine = true,
             textStyle = MaterialTheme.typography.bodyMedium
         )
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
-        Text(
-            text = "Try asking...",
-            fontSize = 11.sp,
-            fontWeight = FontWeight.SemiBold,
-            color = MutedGrayDark,
-            letterSpacing = 1.sp,
-            modifier = Modifier.fillMaxWidth()
-        )
+        Text("Try asking...", fontSize = 10.sp, fontWeight = FontWeight.SemiBold, color = MutedGrayDark, letterSpacing = 1.sp, modifier = Modifier.fillMaxWidth())
 
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(modifier = Modifier.height(8.dp))
 
         suggestions.chunked(2).forEach { row ->
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 row.forEach { (text, emoji) ->
-                    SuggestionChip(emoji = emoji, text = text, onClick = { onSuggestionClick(text) }, modifier = Modifier.weight(1f))
+                    SuggestionChip(emoji, text, onClick = { onSuggestionClick(text) }, modifier = Modifier.weight(1f))
                 }
                 if (row.size < 2) Spacer(modifier = Modifier.weight(1f))
             }
@@ -350,8 +457,7 @@ private fun MessageBubble(message: ChatMessage, isLightForce: Boolean, modifier:
     } else {
         if (isLightForce) MilkyWhiteCard else ShadowBlackCard
     }
-    val bubbleShape = if (isUser) RoundedCornerShape(16.dp, 4.dp, 16.dp, 16.dp)
-    else RoundedCornerShape(4.dp, 16.dp, 16.dp, 16.dp)
+    val bubbleShape = if (isUser) RoundedCornerShape(16.dp, 4.dp, 16.dp, 16.dp) else RoundedCornerShape(4.dp, 16.dp, 16.dp, 16.dp)
 
     Column(
         modifier = modifier.fillMaxWidth().padding(vertical = 4.dp),
@@ -360,6 +466,19 @@ private fun MessageBubble(message: ChatMessage, isLightForce: Boolean, modifier:
         if (!isUser && message.reasoning != null) {
             ReasoningCard(reasoning = message.reasoning, durationMs = message.durationMs)
             Spacer(modifier = Modifier.height(6.dp))
+        }
+
+        // Model & personality badges for assistant messages
+        if (!isUser && message.modelUsed != null) {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                modifier = Modifier.padding(bottom = 2.dp, start = 4.dp)
+            ) {
+                try {
+                    val model = GeminiModel.fromModelId(message.modelUsed)
+                    Text("${model.displayName}", fontSize = 8.sp, color = MutedGrayDark.copy(alpha = 0.5f))
+                } catch (_: Exception) {}
+            }
         }
 
         Box(
@@ -380,7 +499,7 @@ private fun MessageBubble(message: ChatMessage, isLightForce: Boolean, modifier:
 
         if (!isUser && message.durationMs != null) {
             Text(
-                text = "Generated in ${message.durationMs / 1000.0}s",
+                "Generated in ${message.durationMs / 1000.0}s",
                 fontSize = 10.sp,
                 color = MutedGrayDark,
                 modifier = Modifier.padding(top = 2.dp, start = 8.dp)
@@ -400,30 +519,15 @@ private fun ReasoningCard(reasoning: String, durationMs: Long?, modifier: Modifi
         border = BorderStroke(0.5.dp, BalanceGold.copy(alpha = 0.2f))
     ) {
         Column(modifier = Modifier.padding(10.dp)) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(6.dp)
-            ) {
-                Icon(Icons.Rounded.Psychology, contentDescription = null, tint = BalanceGold, modifier = Modifier.size(14.dp))
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                Icon(Icons.Rounded.Psychology, null, tint = BalanceGold, modifier = Modifier.size(14.dp))
                 Text("Deep Thought Process", fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = BalanceGold)
                 if (durationMs != null) Text("• ${durationMs / 1000.0}s", fontSize = 10.sp, color = MutedGrayDark)
-                Spacer(modifier = Modifier.weight(1f))
-                Icon(
-                    if (expanded) Icons.Rounded.ExpandLess else Icons.Rounded.ExpandMore,
-                    contentDescription = "Toggle",
-                    tint = MutedGrayDark,
-                    modifier = Modifier.size(16.dp)
-                )
+                Spacer(Modifier.weight(1f))
+                Icon(if (expanded) Icons.Rounded.ExpandLess else Icons.Rounded.ExpandMore, "Toggle", tint = MutedGrayDark, modifier = Modifier.size(16.dp))
             }
             AnimatedVisibility(visible = expanded, enter = expandVertically() + fadeIn(), exit = shrinkVertically() + fadeOut()) {
-                Text(
-                    reasoning,
-                    fontSize = 12.sp,
-                    color = MutedGrayDark,
-                    lineHeight = 18.sp,
-                    fontStyle = FontStyle.Italic,
-                    modifier = Modifier.padding(top = 6.dp)
-                )
+                Text(reasoning, fontSize = 12.sp, color = MutedGrayDark, lineHeight = 18.sp, fontStyle = FontStyle.Italic, modifier = Modifier.padding(top = 6.dp))
             }
         }
     }
@@ -437,17 +541,12 @@ private fun AssistantThinkingBubble(modifier: Modifier = Modifier) {
     val dot3Alpha by infiniteTransition.animateFloat(0.3f, 1f, infiniteRepeatable(tween(600, 400), RepeatMode.Reverse), label = "dot3")
 
     Row(
-        modifier = modifier
-            .padding(start = 8.dp, top = 8.dp)
-            .clip(RoundedCornerShape(4.dp, 16.dp, 16.dp, 16.dp))
-            .background(ShadowBlackCard)
-            .border(0.5.dp, BalanceGold.copy(alpha = 0.2f), RoundedCornerShape(4.dp, 16.dp, 16.dp, 16.dp))
-            .padding(horizontal = 16.dp, vertical = 10.dp),
+        modifier = modifier.padding(start = 8.dp, top = 8.dp).clip(RoundedCornerShape(4.dp, 16.dp, 16.dp, 16.dp)).background(ShadowBlackCard).border(0.5.dp, BalanceGold.copy(alpha = 0.2f), RoundedCornerShape(4.dp, 16.dp, 16.dp, 16.dp)).padding(horizontal = 16.dp, vertical = 10.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(4.dp)
     ) {
         YinYangLogo(size = 16.dp, isSpinning = true)
-        Spacer(modifier = Modifier.width(4.dp))
+        Spacer(Modifier.width(4.dp))
         listOf(dot1Alpha, dot2Alpha, dot3Alpha).forEach { alpha ->
             Box(Modifier.size(5.dp).graphicsLayer(alpha = alpha).clip(CircleShape).background(BalanceGold))
         }
@@ -462,8 +561,8 @@ private fun ErrorBanner(error: String, modifier: Modifier = Modifier) {
         border = BorderStroke(0.5.dp, Color(0xFFEF5350).copy(alpha = 0.3f)),
         shape = RoundedCornerShape(10.dp)
     ) {
-        Row(modifier = Modifier.padding(10.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            Icon(Icons.Rounded.ErrorOutline, contentDescription = null, tint = Color(0xFFEF5350), modifier = Modifier.size(16.dp))
+        Row(Modifier.padding(10.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Icon(Icons.Rounded.ErrorOutline, null, tint = Color(0xFFEF5350), modifier = Modifier.size(16.dp))
             Text(error, style = MaterialTheme.typography.bodySmall, color = Color(0xFFEF5350), modifier = Modifier.weight(1f))
         }
     }
@@ -478,26 +577,31 @@ private fun BottomChatControls(
     onSendClick: () -> Unit,
     onMicClick: () -> Unit,
     isGenerating: Boolean,
+    hasAttachments: Boolean,
     modifier: Modifier = Modifier
 ) {
     Surface(modifier = modifier.fillMaxWidth(), color = MaterialTheme.colorScheme.background, shadowElevation = 8.dp) {
         Column(modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)) {
-            Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 AssistChip(
                     onClick = onDeepThinkingToggle,
                     label = { Text("Deep Think", fontSize = 11.sp, fontWeight = if (isDeepThinkingEnabled) FontWeight.Bold else FontWeight.Normal) },
-                    leadingIcon = {
-                        Icon(Icons.Rounded.Psychology, contentDescription = null, modifier = Modifier.size(14.dp), tint = if (isDeepThinkingEnabled) BalanceGold else MutedGrayDark)
-                    },
-                    colors = AssistChipDefaults.assistChipColors(
-                        containerColor = if (isDeepThinkingEnabled) BalanceGold.copy(alpha = 0.12f) else Color.Transparent,
-                        labelColor = if (isDeepThinkingEnabled) BalanceGold else MutedGrayDark
-                    ),
+                    leadingIcon = { Icon(Icons.Rounded.Psychology, null, Modifier.size(14.dp), tint = if (isDeepThinkingEnabled) BalanceGold else MutedGrayDark) },
+                    colors = AssistChipDefaults.assistChipColors(containerColor = if (isDeepThinkingEnabled) BalanceGold.copy(alpha = 0.12f) else Color.Transparent, labelColor = if (isDeepThinkingEnabled) BalanceGold else MutedGrayDark),
                     border = AssistChipDefaults.assistChipBorder(borderColor = if (isDeepThinkingEnabled) BalanceGold.copy(alpha = 0.3f) else BorderGrayDark, enabled = true)
                 )
-                Spacer(modifier = Modifier.weight(1f))
+                if (hasAttachments) {
+                    AssistChip(
+                        onClick = { FileUploadManager.clearAll() },
+                        label = { Text("Clear files", fontSize = 11.sp) },
+                        leadingIcon = { Icon(Icons.Rounded.ClearAll, null, Modifier.size(14.dp), tint = MutedGrayDark) },
+                        colors = AssistChipDefaults.assistChipColors(containerColor = Color.Transparent, labelColor = MutedGrayDark),
+                        border = AssistChipDefaults.assistChipBorder(borderColor = BorderGrayDark, enabled = true)
+                    )
+                }
+                Spacer(Modifier.weight(1f))
             }
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(Modifier.height(8.dp))
             OutlinedTextField(
                 value = prompt,
                 onValueChange = onPromptChange,
@@ -506,13 +610,16 @@ private fun BottomChatControls(
                 trailingIcon = {
                     Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
                         IconButton(onClick = onMicClick, modifier = Modifier.size(36.dp)) {
-                            Icon(Icons.Rounded.Mic, contentDescription = "Voice input", tint = MutedGrayDark, modifier = Modifier.size(18.dp))
+                            Icon(Icons.Rounded.Mic, "Voice input", tint = MutedGrayDark, modifier = Modifier.size(18.dp))
                         }
-                        IconButton(onClick = onSendClick, enabled = prompt.isNotBlank() && !isGenerating, modifier = Modifier.size(36.dp)) {
+                        IconButton(
+                            onClick = onSendClick,
+                            enabled = (prompt.isNotBlank() || hasAttachments) && !isGenerating,
+                            modifier = Modifier.size(36.dp)
+                        ) {
                             Icon(
-                                Icons.AutoMirrored.Rounded.Send,
-                                contentDescription = "Send",
-                                tint = if (prompt.isNotBlank() && !isGenerating) BalanceGold else MutedGrayDark.copy(alpha = 0.3f),
+                                Icons.AutoMirrored.Rounded.Send, "Send",
+                                tint = if ((prompt.isNotBlank() || hasAttachments) && !isGenerating) BalanceGold else MutedGrayDark.copy(alpha = 0.3f),
                                 modifier = Modifier.size(18.dp)
                             )
                         }
@@ -520,13 +627,9 @@ private fun BottomChatControls(
                 },
                 shape = RoundedCornerShape(20.dp),
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = BalanceGold.copy(alpha = 0.5f),
-                    unfocusedBorderColor = BorderGrayDark,
-                    focusedContainerColor = ShadowBlackCard,
-                    unfocusedContainerColor = ShadowBlackCard,
-                    cursorColor = BalanceGold,
-                    focusedTextColor = MilkyWhiteText,
-                    unfocusedTextColor = MilkyWhiteText
+                    focusedBorderColor = BalanceGold.copy(alpha = 0.5f), unfocusedBorderColor = BorderGrayDark,
+                    focusedContainerColor = ShadowBlackCard, unfocusedContainerColor = ShadowBlackCard,
+                    cursorColor = BalanceGold, focusedTextColor = MilkyWhiteText, unfocusedTextColor = MilkyWhiteText
                 ),
                 maxLines = 4,
                 textStyle = MaterialTheme.typography.bodyMedium
