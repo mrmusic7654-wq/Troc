@@ -34,6 +34,7 @@ data class Content(
 data class Part(
     val text: String? = null,
     val inlineData: InlineData? = null,
+    val fileData: FileData? = null,
     val functionCall: FunctionCall? = null,
     val functionResponse: FunctionResponse? = null
 )
@@ -42,6 +43,12 @@ data class Part(
 data class InlineData(
     val mimeType: String,
     val data: String
+)
+
+@JsonClass(generateAdapter = true)
+data class FileData(
+    val mimeType: String,
+    val fileUri: String
 )
 
 @JsonClass(generateAdapter = true)
@@ -135,16 +142,6 @@ data class CitationSource(
 )
 
 // ═══════════════════════════════════════
-// Streaming Models
-// ═══════════════════════════════════════
-
-@JsonClass(generateAdapter = true)
-data class StreamGenerateContentResponse(
-    val candidates: List<Candidate>? = null,
-    val promptFeedback: PromptFeedback? = null
-)
-
-// ═══════════════════════════════════════
 // Model Info Models
 // ═══════════════════════════════════════
 
@@ -165,10 +162,6 @@ data class ModelInfo(
     val maxOutputTokens: Int? = null
 )
 
-// ═══════════════════════════════════════
-// Count Tokens Models
-// ═══════════════════════════════════════
-
 @JsonClass(generateAdapter = true)
 data class CountTokensRequest(
     val contents: List<Content>
@@ -180,27 +173,6 @@ data class CountTokensResponse(
 )
 
 // ═══════════════════════════════════════
-// Embedding Models
-// ═══════════════════════════════════════
-
-@JsonClass(generateAdapter = true)
-data class EmbedContentRequest(
-    val content: Content? = null,
-    val taskType: String? = null,
-    val title: String? = null
-)
-
-@JsonClass(generateAdapter = true)
-data class EmbedContentResponse(
-    val embedding: Embedding? = null
-)
-
-@JsonClass(generateAdapter = true)
-data class Embedding(
-    val values: List<Float>? = null
-)
-
-// ═══════════════════════════════════════
 // Gemini API Service Interface
 // ═══════════════════════════════════════
 
@@ -209,14 +181,14 @@ interface GeminiApiService {
     @POST("v1beta/models/{model}:generateContent")
     suspend fun generateContent(
         @Query("key") apiKey: String,
-        @Path("model") model: String = "gemini-2.0-flash",
+        @Path("model") model: String = "gemini-2.5-flash",
         @Body request: GenerateContentRequest
     ): GenerateContentResponse
 
     @POST("v1beta/models/{model}:streamGenerateContent")
     suspend fun streamGenerateContent(
         @Query("key") apiKey: String,
-        @Path("model") model: String = "gemini-2.0-flash",
+        @Path("model") model: String = "gemini-2.5-flash",
         @Query("alt") alt: String = "sse",
         @Body request: GenerateContentRequest
     ): okhttp3.Response
@@ -235,19 +207,12 @@ interface GeminiApiService {
     @POST("v1beta/models/{model}:countTokens")
     suspend fun countTokens(
         @Query("key") apiKey: String,
-        @Path("model") model: String = "gemini-2.0-flash",
+        @Path("model") model: String = "gemini-2.5-flash",
         @Body request: CountTokensRequest
     ): CountTokensResponse
 
     @POST("v1beta/models/{model}:embedContent")
     suspend fun embedContent(
-        @Query("key") apiKey: String,
-        @Path("model") model: String = "text-embedding-004",
-        @Body request: EmbedContentRequest
-    ): EmbedContentResponse
-
-    @POST("v1beta/models/{model}:batchEmbedContents")
-    suspend fun batchEmbedContents(
         @Query("key") apiKey: String,
         @Path("model") model: String = "text-embedding-004",
         @Body request: Map<String, Any>
@@ -259,7 +224,6 @@ interface GeminiApiService {
 // ═══════════════════════════════════════
 
 interface GeminiLegacyService {
-
     @POST("v1beta/models/gemini-3.5-flash:generateContent")
     suspend fun generateContent(
         @Query("key") apiKey: String,
