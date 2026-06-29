@@ -303,73 +303,190 @@ fun ChatScreen(
                     }
                 }
 
-                Surface(modifier = Modifier.fillMaxWidth(), color = MaterialTheme.colorScheme.background, shadowElevation = 12.dp) {
-                    Column(modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(6.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            FileUploadBar(onFilesChanged = {}, enabled = !isGenerating, compact = true)
-
-                            OutlinedTextField(
-                                value = inputPrompt,
-                                onValueChange = { inputPrompt = it },
-                                modifier = Modifier.weight(1f),
-                                placeholder = { Text("Harmonize your thoughts...", color = MutedGrayDark.copy(alpha = 0.5f), fontSize = 13.sp) },
-                                shape = RoundedCornerShape(24.dp),
-                                colors = OutlinedTextFieldDefaults.colors(
-                                    focusedBorderColor = BalanceGold.copy(alpha = 0.4f), unfocusedBorderColor = BorderGrayDark,
-                                    focusedContainerColor = ShadowBlackCard, unfocusedContainerColor = ShadowBlackCard,
-                                    cursorColor = BalanceGold, focusedTextColor = MilkyWhiteText, unfocusedTextColor = MilkyWhiteText
-                                ),
-                                maxLines = 3,
-                                textStyle = MaterialTheme.typography.bodyMedium
-                            )
-
-                            val canSend = (inputPrompt.isNotBlank() || attachedFiles.isNotEmpty()) && !isGenerating
-                            IconButton(
-                                onClick = {
-                                    if (canSend) {
-                                        viewModel.sendMessage(inputPrompt)
-                                        inputPrompt = ""
-                                        focusManager.clearFocus()
-                                    }
-                                },
-                                enabled = canSend,
-                                modifier = Modifier.size(40.dp)
+                Surface(modifier = Modifier.fillMaxWidth(), color = ShadowBlackCard, shadowElevation = 16.dp) {
+                    Column(modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp)) {
+                        // Attached files section
+                        if (attachedFiles.isNotEmpty()) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
+                                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Icon(Icons.AutoMirrored.Rounded.Send, "Send", tint = if (canSend) BalanceGold else MutedGrayDark.copy(alpha = 0.3f), modifier = Modifier.size(20.dp))
+                                LazyRow(modifier = Modifier.weight(1f), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                                    items(attachedFiles.toList(), key = { it.id }) { file ->
+                                        Card(
+                                            modifier = Modifier.width(100.dp),
+                                            shape = RoundedCornerShape(8.dp),
+                                            colors = CardDefaults.cardColors(containerColor = ShadowBlack),
+                                            border = BorderStroke(0.5.dp, BalanceGold.copy(alpha = 0.2f))
+                                        ) {
+                                            Row(
+                                                modifier = Modifier.padding(6.dp),
+                                                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                                                verticalAlignment = Alignment.CenterVertically
+                                            ) {
+                                                Text(file.icon, fontSize = 14.sp)
+                                                Column(modifier = Modifier.weight(1f)) {
+                                                    Text(file.fileName, fontSize = 9.sp, color = MilkyWhiteText, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                                                    Text(file.formattedSize, fontSize = 8.sp, color = MutedGrayDark, fontFamily = FontFamily.Monospace)
+                                                }
+                                                IconButton(onClick = { FileUploadManager.removeFile(file.id) }, modifier = Modifier.size(18.dp)) {
+                                                    Icon(Icons.Rounded.Close, "Remove", tint = MutedGrayDark, modifier = Modifier.size(12.dp))
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                                IconButton(onClick = { FileUploadManager.clearAll() }, modifier = Modifier.size(30.dp)) {
+                                    Icon(Icons.Rounded.ClearAll, "Clear all", tint = MutedGrayDark, modifier = Modifier.size(18.dp))
+                                }
                             }
                         }
 
-                        Spacer(Modifier.height(4.dp))
-
+                        // Main input row
                         Row(
                             modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(6.dp),
-                            verticalAlignment = Alignment.CenterVertically
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalAlignment = Alignment.Bottom
                         ) {
-                            AssistChip(
-                                onClick = { viewModel.isDeepThinkingEnabled.value = !viewModel.isDeepThinkingEnabled.value },
-                                label = { Text("Deep Think", fontSize = 10.sp, fontWeight = if (isDeepThinkingEnabled) FontWeight.Bold else FontWeight.Normal) },
-                                leadingIcon = { Icon(Icons.Rounded.Psychology, null, Modifier.size(12.dp), tint = if (isDeepThinkingEnabled) BalanceGold else MutedGrayDark) },
-                                colors = AssistChipDefaults.assistChipColors(containerColor = if (isDeepThinkingEnabled) BalanceGold.copy(alpha = 0.12f) else Color.Transparent, labelColor = if (isDeepThinkingEnabled) BalanceGold else MutedGrayDark),
-                                border = AssistChipDefaults.assistChipBorder(borderColor = if (isDeepThinkingEnabled) BalanceGold.copy(alpha = 0.3f) else BorderGrayDark, enabled = true),
-                                modifier = Modifier.height(28.dp)
-                            )
-
-                            IconButton(onClick = { viewModel.isListening.value = true }, modifier = Modifier.size(28.dp)) {
-                                Icon(Icons.Rounded.Mic, "Voice", tint = MutedGrayDark, modifier = Modifier.size(16.dp))
+                            // File upload button
+                            IconButton(
+                                onClick = { /* File upload handled by FileUploadBar */ },
+                                modifier = Modifier.size(40.dp),
+                                enabled = !isGenerating
+                            ) {
+                                Icon(Icons.Rounded.AttachFile, "Attach file", tint = if (isGenerating) MutedGrayDark.copy(alpha = 0.3f) else BalanceGold.copy(alpha = 0.7f), modifier = Modifier.size(20.dp))
                             }
 
-                            Spacer(Modifier.weight(1f))
-
-                            Text(
-                                if (isGenerating) "Generating..." else "Ready",
-                                fontSize = 9.sp,
-                                color = if (isGenerating) BalanceGold else MutedGrayDark.copy(alpha = 0.4f)
+                            // Input field with refined styling
+                            OutlinedTextField(
+                                value = inputPrompt,
+                                onValueChange = { inputPrompt = it },
+                                modifier = Modifier.weight(1f).heightIn(min = 48.dp, max = 120.dp),
+                                placeholder = { 
+                                    Text(
+                                        "Harmonize your thoughts...", 
+                                        color = MutedGrayDark.copy(alpha = 0.6f), 
+                                        fontSize = 14.sp,
+                                        fontStyle = FontStyle.Italic
+                                    ) 
+                                },
+                                shape = RoundedCornerShape(24.dp),
+                                colors = OutlinedTextFieldDefaults.colors(
+                                    focusedBorderColor = BalanceGold.copy(alpha = 0.5f),
+                                    unfocusedBorderColor = BorderGrayDark.copy(alpha = 0.5f),
+                                    focusedContainerColor = ShadowBlack.copy(alpha = 0.5f),
+                                    unfocusedContainerColor = ShadowBlack.copy(alpha = 0.5f),
+                                    cursorColor = BalanceGold,
+                                    focusedTextColor = MilkyWhiteText,
+                                    unfocusedTextColor = MilkyWhiteText.copy(alpha = 0.9f),
+                                    focusedPlaceholderColor = MutedGrayDark.copy(alpha = 0.5f),
+                                    unfocusedPlaceholderColor = MutedGrayDark.copy(alpha = 0.4f)
+                                ),
+                                maxLines = 5,
+                                textStyle = MaterialTheme.typography.bodyMedium.copy(lineHeight = 22.sp),
+                                trailingIcon = {
+                                    if (inputPrompt.isNotBlank()) {
+                                        IconButton(onClick = { inputPrompt = "" }) {
+                                            Icon(Icons.Rounded.Clear, "Clear", tint = MutedGrayDark, modifier = Modifier.size(18.dp))
+                                        }
+                                    }
+                                }
                             )
+
+                            // Send button with enhanced visual feedback
+                            val canSend = (inputPrompt.isNotBlank() || attachedFiles.isNotEmpty()) && !isGenerating
+                            Surface(
+                                modifier = Modifier.size(44.dp),
+                                shape = CircleShape,
+                                color = if (canSend) BalanceGold else BorderGrayDark.copy(alpha = 0.3f),
+                                shadowElevation = if (canSend) 8.dp else 0.dp
+                            ) {
+                                IconButton(
+                                    onClick = {
+                                        if (canSend) {
+                                            viewModel.sendMessage(inputPrompt)
+                                            inputPrompt = ""
+                                            focusManager.clearFocus()
+                                        }
+                                    },
+                                    enabled = canSend,
+                                    modifier = Modifier.fillMaxSize()
+                                ) {
+                                    Icon(
+                                        Icons.AutoMirrored.Rounded.Send, 
+                                        "Send", 
+                                        tint = if (canSend) ShadowBlack else MutedGrayDark.copy(alpha = 0.3f),
+                                        modifier = Modifier.size(22.dp)
+                                    )
+                                }
+                            }
+                        }
+
+                        Spacer(Modifier.height(6.dp))
+
+                        // Bottom action row
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Row(horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
+                                // Deep Think toggle
+                                AssistChip(
+                                    onClick = { viewModel.isDeepThinkingEnabled.value = !viewModel.isDeepThinkingEnabled.value },
+                                    label = { Text("Deep Think", fontSize = 10.sp, fontWeight = if (isDeepThinkingEnabled) FontWeight.Bold else FontWeight.Normal) },
+                                    leadingIcon = { 
+                                        Icon(
+                                            Icons.Rounded.Psychology, 
+                                            null, 
+                                            Modifier.size(14.dp), 
+                                            tint = if (isDeepThinkingEnabled) BalanceGold else MutedGrayDark
+                                        ) 
+                                    },
+                                    colors = AssistChipDefaults.assistChipColors(
+                                        containerColor = if (isDeepThinkingEnabled) BalanceGold.copy(alpha = 0.15f) else Color.Transparent,
+                                        labelColor = if (isDeepThinkingEnabled) BalanceGold else MutedGrayDark
+                                    ),
+                                    border = AssistChipDefaults.assistChipBorder(
+                                        borderColor = if (isDeepThinkingEnabled) BalanceGold.copy(alpha = 0.4f) else BorderGrayDark.copy(alpha = 0.5f),
+                                        enabled = true
+                                    ),
+                                    modifier = Modifier.height(28.dp)
+                                )
+
+                                // Voice input button
+                                Surface(
+                                    onClick = { viewModel.isListening.value = true },
+                                    shape = CircleShape,
+                                    color = if (isListening) BalanceGold.copy(alpha = 0.2f) else Color.Transparent,
+                                    modifier = Modifier.size(32.dp)
+                                ) {
+                                    Icon(
+                                        Icons.Rounded.Mic, 
+                                        "Voice", 
+                                        tint = if (isListening) BalanceGold else MutedGrayDark,
+                                        modifier = Modifier.size(18.dp).align(Alignment.Center)
+                                    )
+                                }
+                            }
+
+                            // Status indicator
+                            Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
+                                if (isGenerating) {
+                                    CircularProgressIndicator(
+                                        modifier = Modifier.size(14.dp),
+                                        color = BalanceGold,
+                                        strokeWidth = 2.dp
+                                    )
+                                }
+                                Text(
+                                    if (isGenerating) "Generating..." else "Ready",
+                                    fontSize = 10.sp,
+                                    color = if (isGenerating) BalanceGold else MutedGrayDark.copy(alpha = 0.5f),
+                                    fontWeight = FontWeight.Medium
+                                )
+                            }
                         }
                     }
                 }
