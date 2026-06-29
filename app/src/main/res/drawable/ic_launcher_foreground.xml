@@ -1,10 +1,60 @@
 <?xml version="1.0" encoding="utf-8"?>
-<vector xmlns:android="http://schemas.android.com/apk/res/android" android:width="108dp" android:height="108dp" android:viewportWidth="108" android:viewportHeight="108">
-    <path android:fillColor="@color/balance_gold" android:pathData="M54,54m-40,0a40,40 0,1 1,80 0a40,40 0,1 1,-80 0"/>
-    <path android:fillColor="@color/shadow_black" android:pathData="M54,54m-36,0a36,36 0,1 1,72 0a36,36 0,1 1,-72 0"/>
-    <path android:fillColor="@color/milky_white" android:pathData="M54,18A36,36 0,0 0,54 90A36,36 0,0 1,54 18Z"/>
-    <path android:fillColor="@color/shadow_black" android:pathData="M54,36m-12,0a12,12 0,1 1,24 0a12,12 0,1 1,-24 0"/>
-    <path android:fillColor="@color/milky_white" android:pathData="M54,72m-12,0a12,12 0,1 1,24 0a12,12 0,1 1,-24 0"/>
-    <path android:fillColor="@color/milky_white" android:pathData="M54,36m-4,0a4,4 0,1 1,8 0a4,4 0,1 1,-8 0"/>
-    <path android:fillColor="@color/shadow_black" android:pathData="M54,72m-4,0a4,4 0,1 1,8 0a4,4 0,1 1,-8 0"/>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Background circle -->
+    <path
+        android:fillColor="#161616"
+        android:pathData="M54,54m-45,0a45,45 0,1 1,90 0a45,45 0,1 1,-90 0"/>
+    
+    <!-- Outer gold ring -->
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M54,54m-42,0a42,42 0,1 1,84 0a42,42 0,1 1,-84 0"
+        android:strokeWidth="2"
+        android:strokeColor="#CBB28D"/>
+    
+    <!-- Yang (white) half - top curve -->
+    <path
+        android:fillColor="#F5F5F0"
+        android:pathData="M54,14 C54,14 78,30 78,54 C78,78 54,94 54,94 L54,54 Z"/>
+    
+    <!-- Yin (black) half - bottom curve -->
+    <path
+        android:fillColor="#0A0A0A"
+        android:pathData="M54,14 C54,14 30,30 30,54 C30,78 54,94 54,94 L54,54 Z"/>
+    
+    <!-- S-curve division -->
+    <path
+        android:fillColor="#F5F5F0"
+        android:pathData="M54,14 C54,14 78,30 78,54 C78,78 54,94 54,94 C54,94 30,78 30,54 C30,30 54,14 54,14"/>
+    
+    <!-- Large black circle in white (Yin in Yang) -->
+    <path
+        android:fillColor="#0A0A0A"
+        android:pathData="M54,32m-13,0a13,13 0,1 1,26 0a13,13 0,1 1,-26 0"/>
+    
+    <!-- Large white circle in black (Yang in Yin) -->
+    <path
+        android:fillColor="#F5F5F0"
+        android:pathData="M54,76m-13,0a13,13 0,1 1,26 0a13,13 0,1 1,-26 0"/>
+    
+    <!-- Small white dot in black circle -->
+    <path
+        android:fillColor="#F5F5F0"
+        android:pathData="M54,32m-4,0a4,4 0,1 1,8 0a4,4 0,1 1,-8 0"/>
+    
+    <!-- Small black dot in white circle -->
+    <path
+        android:fillColor="#0A0A0A"
+        android:pathData="M54,76m-4,0a4,4 0,1 1,8 0a4,4 0,1 1,-8 0"/>
+    
+    <!-- Gold accent ring -->
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M54,54m-38,0a38,38 0,1 1,76 0a38,38 0,1 1,-76 0"
+        android:strokeWidth="1"
+        android:strokeColor="#CBB28D"/>
 </vector>

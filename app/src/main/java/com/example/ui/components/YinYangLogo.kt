@@ -37,7 +37,7 @@ fun YinYangLogo(
             initialValue = 0f,
             targetValue = 360f,
             animationSpec = infiniteRepeatable(
-                animation = tween(3000, easing = FastOutSlowInEasing),
+                animation = tween(8000, easing = FastOutSlowInEasing),
                 repeatMode = RepeatMode.Restart
             ),
             label = "angle"
@@ -48,10 +48,10 @@ fun YinYangLogo(
 
     val glowAlpha by if (isSpinning && glowEnabled) {
         infiniteTransition.animateFloat(
-            initialValue = 0.15f,
-            targetValue = 0.35f,
+            initialValue = 0.1f,
+            targetValue = 0.4f,
             animationSpec = infiniteRepeatable(
-                animation = tween(1500, easing = FastOutSlowInEasing),
+                animation = tween(2000, easing = FastOutSlowInEasing),
                 repeatMode = RepeatMode.Reverse
             ),
             label = "glow"
@@ -62,10 +62,10 @@ fun YinYangLogo(
 
     val breathScale by if (isSpinning) {
         infiniteTransition.animateFloat(
-            initialValue = 1f,
-            targetValue = 1.03f,
+            initialValue = 0.98f,
+            targetValue = 1.02f,
             animationSpec = infiniteRepeatable(
-                animation = tween(2000, easing = FastOutSlowInEasing),
+                animation = tween(3000, easing = FastOutSlowInEasing),
                 repeatMode = RepeatMode.Reverse
             ),
             label = "breath"
@@ -78,7 +78,7 @@ fun YinYangLogo(
         val canvasSize = this.size
         val radius = canvasSize.width / 2f
         val center = Offset(radius, radius)
-        val strokeWidth = 1.5.dp.toPx()
+        val strokeWidth = maxOf(1.5.dp.toPx(), radius * 0.015f)
 
         withTransform({
             scale(breathScale, breathScale, center)
@@ -105,87 +105,83 @@ fun YinYangLogo(
                 if (isSpinning && glowEnabled) {
                     drawPath(
                         path = hexPath,
-                        color = outlineColor.copy(alpha = glowAlpha * 0.3f),
-                        style = Stroke(width = strokeWidth * 5)
+                        color = outlineColor.copy(alpha = glowAlpha * 0.4f),
+                        style = Stroke(width = strokeWidth * 6)
                     )
                 }
 
-                // White half (Yang) - Left side
-                val yangPath = Path().apply {
+                // Draw background circle for clean edges
+                drawCircle(
+                    color = ShadowBlack,
+                    radius = radius * 0.88f,
+                    center = center
+                )
+
+                // S-curve dividing line - proper yin-yang shape
+                val sCurvePath = Path().apply {
                     moveTo(center.x, center.y - radius * 0.85f)
-                    lineTo(center.x - radius * 0.74f, center.y - radius * 0.425f)
-                    lineTo(center.x - radius * 0.74f, center.y + radius * 0.425f)
-                    lineTo(center.x, center.y + radius * 0.85f)
-                    // Curve back through S-line
+                    // Left curve (yang side)
                     cubicTo(
-                        center.x - radius * 0.35f, center.y + radius * 0.3f,
-                        center.x - radius * 0.35f, center.y - radius * 0.3f,
+                        center.x - radius * 0.5f, center.y - radius * 0.4f,
+                        center.x - radius * 0.5f, center.y + radius * 0.4f,
+                        center.x, center.y + radius * 0.85f
+                    )
+                    // Right curve back (completing the yang half)
+                    cubicTo(
+                        center.x + radius * 0.85f, center.y + radius * 0.4f,
+                        center.x + radius * 0.85f, center.y - radius * 0.4f,
                         center.x, center.y - radius * 0.85f
                     )
                     close()
                 }
-                drawPath(path = yangPath, color = MilkyWhite)
+                drawPath(path = sCurvePath, color = MilkyWhite)
 
-                // Black half (Yin) - Right side (background already black)
+                // Small circles for eyes
+                val eyeRadius = radius * 0.18f
+                val dotRadius = radius * 0.08f
                 
-                // Top small circle (Yin in Yang) - Black
+                // Upper eye (black dot in white)
                 drawCircle(
                     color = ShadowBlack,
-                    radius = radius * 0.28f,
-                    center = Offset(center.x - radius * 0.25f, center.y - radius * 0.3f)
+                    radius = eyeRadius,
+                    center = Offset(center.x - radius * 0.25f, center.y - radius * 0.35f)
                 )
-
-                // Bottom small circle (Yang in Yin) - White
                 drawCircle(
                     color = MilkyWhite,
-                    radius = radius * 0.28f,
-                    center = Offset(center.x + radius * 0.25f, center.y + radius * 0.3f)
+                    radius = dotRadius,
+                    center = Offset(center.x - radius * 0.25f, center.y - radius * 0.35f)
                 )
 
-                // Top seed dot (White in Black)
+                // Lower eye (white dot in black - already on black background)
                 drawCircle(
                     color = MilkyWhite,
-                    radius = radius * 0.09f,
-                    center = Offset(center.x - radius * 0.25f, center.y - radius * 0.3f)
+                    radius = eyeRadius,
+                    center = Offset(center.x + radius * 0.25f, center.y + radius * 0.35f)
                 )
-
-                // Bottom seed dot (Black in White)
                 drawCircle(
                     color = ShadowBlack,
-                    radius = radius * 0.09f,
-                    center = Offset(center.x + radius * 0.25f, center.y + radius * 0.3f)
+                    radius = dotRadius,
+                    center = Offset(center.x + radius * 0.25f, center.y + radius * 0.35f)
                 )
 
-                // Gold S-curve line
-                val sCurve = Path().apply {
-                    moveTo(center.x, center.y - radius * 0.85f)
-                    cubicTo(
-                        center.x - radius * 0.5f, center.y - radius * 0.15f,
-                        center.x - radius * 0.15f, center.y + radius * 0.05f,
-                        center.x, center.y
-                    )
-                    cubicTo(
-                        center.x + radius * 0.15f, center.y - radius * 0.05f,
-                        center.x + radius * 0.5f, center.y + radius * 0.15f,
-                        center.x, center.y + radius * 0.85f
-                    )
-                }
-                drawPath(
-                    path = sCurve,
-                    color = outlineColor.copy(alpha = 0.15f),
+                // Gold accent ring inside hexagon
+                drawCircle(
+                    color = outlineColor.copy(alpha = 0.2f),
+                    radius = radius * 0.9f,
+                    center = center,
                     style = Stroke(width = strokeWidth * 0.5f)
                 )
 
                 // Hexagon border
                 drawPath(
                     path = hexPath,
-                    color = outlineColor.copy(alpha = if (isSpinning) 0.5f else 0.35f),
+                    color = outlineColor.copy(alpha = if (isSpinning) 0.7f else 0.5f),
                     style = Stroke(width = strokeWidth)
                 )
 
                 // Inner hexagon border
                 val innerHexPath = Path().apply {
-                    val innerRadius = radius * 0.78f
+                    val innerRadius = radius * 0.75f
                     for (i in 0 until 6) {
                         val angle = Math.toRadians((i * 60.0 - 30.0))
                         val x = center.x + (innerRadius * cos(angle)).toFloat()
@@ -196,21 +192,21 @@ fun YinYangLogo(
                 }
                 drawPath(
                     path = innerHexPath,
-                    color = outlineColor.copy(alpha = 0.08f),
-                    style = Stroke(width = strokeWidth * 0.3f)
+                    color = outlineColor.copy(alpha = 0.1f),
+                    style = Stroke(width = strokeWidth * 0.4f)
                 )
 
                 // Orbiting particles
                 if (isSpinning) {
                     val particleCount = 6
                     for (i in 0 until particleCount) {
-                        val angle = Math.toRadians((i * 60.0 + rotationAngle * 2).toDouble())
+                        val angle = Math.toRadians((i * 60.0 + rotationAngle).toDouble())
                         val particleRadius = radius * 0.95f
                         val px = center.x + (particleRadius * cos(angle)).toFloat()
                         val py = center.y + (particleRadius * sin(angle)).toFloat()
                         drawCircle(
-                            color = outlineColor.copy(alpha = 0.2f),
-                            radius = 1.5.dp.toPx(),
+                            color = outlineColor.copy(alpha = 0.3f),
+                            radius = maxOf(2.dp.toPx(), radius * 0.02f),
                             center = Offset(px, py)
                         )
                     }
@@ -230,6 +226,7 @@ fun YinYangLogo(
                     )
                 }
 
+                // Yang (white) half
                 drawArc(
                     color = MilkyWhite,
                     startAngle = 90f,
@@ -239,11 +236,15 @@ fun YinYangLogo(
                     topLeft = Offset(0f, 0f)
                 )
 
-                drawCircle(color = ShadowBlack, radius = radius / 2f, center = Offset(radius, radius / 2f))
-                drawCircle(color = MilkyWhite, radius = radius / 2f, center = Offset(radius, radius * 1.5f))
-                drawCircle(color = MilkyWhite, radius = radius / 6f, center = Offset(radius, radius / 2f))
-                drawCircle(color = ShadowBlack, radius = radius / 6f, center = Offset(radius, radius * 1.5f))
+                // Large circles for each half
+                drawCircle(color = ShadowBlack, radius = radius / 2f, center = Offset(center.x, center.y - radius / 2f))
+                drawCircle(color = MilkyWhite, radius = radius / 2f, center = Offset(center.x, center.y + radius / 2f))
 
+                // Small dots (eyes)
+                drawCircle(color = MilkyWhite, radius = radius / 6f, center = Offset(center.x, center.y - radius / 2f))
+                drawCircle(color = ShadowBlack, radius = radius / 6f, center = Offset(center.x, center.y + radius / 2f))
+
+                // Outer ring
                 drawCircle(
                     color = outlineColor.copy(alpha = if (isSpinning) 0.6f else 0.4f),
                     radius = radius,
@@ -251,11 +252,12 @@ fun YinYangLogo(
                     style = Stroke(width = strokeWidth)
                 )
 
+                // Inner decorative ring
                 drawCircle(
                     color = outlineColor.copy(alpha = if (isSpinning) 0.2f else 0.1f),
-                    radius = radius - strokeWidth,
+                    radius = radius - strokeWidth * 2,
                     center = center,
-                    style = Stroke(width = strokeWidth * 0.3f)
+                    style = Stroke(width = strokeWidth * 0.4f)
                 )
 
                 if (isSpinning) {
@@ -266,8 +268,8 @@ fun YinYangLogo(
                         val px = center.x + (particleRadius * cos(angle)).toFloat()
                         val py = center.y + (particleRadius * sin(angle)).toFloat()
                         drawCircle(
-                            color = outlineColor.copy(alpha = 0.15f),
-                            radius = 1.5.dp.toPx(),
+                            color = outlineColor.copy(alpha = 0.2f),
+                            radius = maxOf(1.5.dp.toPx(), radius * 0.015f),
                             center = Offset(px, py)
                         )
                     }

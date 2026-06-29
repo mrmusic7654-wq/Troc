@@ -1,0 +1,42 @@
+```
+# Compiled and build artifacts
+*.class
+*.dex
+*.so
+*.aar
+*.apk
+*.jar
+
+# Dependencies
+.gradle/
+build/
+target/
+
+# Local configuration file (sdk path, etc)
+local.properties
+
+# Android Studio generated files
+captures/
+*.iml
+*.hprof
+
+# Environment
+.env
+.env.local
+.env.*
+
+# Logs
+*.log
+
+# Coverage reports
+coverage/
+*.gcov
+*.lcov
+*.profdata
+
+# IDE
+.idea/
+*.swp
+*.swo
+*~
+```
