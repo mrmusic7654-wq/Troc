@@ -4,7 +4,6 @@ package com.example.data.filemanager
 import android.content.Context
 import android.net.Uri
 import android.provider.OpenableColumns
-import android.webkit.MimeTypeMap
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import java.io.File
@@ -74,10 +73,17 @@ enum class FileType(
     ARCHIVE("Archive", listOf("application/zip", "application/gzip", "application/x-tar"), 10, 50 * 1024 * 1024),
     OTHER("Other", listOf("*/*"), 10, 7 * 1024 * 1024);
 
+    fun matchesMimeType(mimeType: String): Boolean {
+        return mimeTypes.any { pattern ->
+            pattern == "*/*" || pattern == mimeType ||
+            (pattern.endsWith("/*") && mimeType.startsWith(pattern.removeSuffix("/*") + "/"))
+        }
+    }
+
     companion object {
         fun fromMimeType(mimeType: String): FileType {
             for (type in entries) {
-                if (type.mimeTypes.any { mimeType.matchesGlob(it) || mimeType == it }) return type
+                if (type.matchesMimeType(mimeType)) return type
             }
             return OTHER
         }
@@ -153,7 +159,7 @@ object FileUploadManager {
             )
 
             if (fileSize > attached.maxAllowedSize) {
-                onError("${attached.formattedSize} exceeds ${attached.formattedSize} limit for ${fileType.label}")
+                onError("${attached.formattedSize} exceeds limit for ${fileType.label}")
                 return
             }
 
@@ -206,11 +212,5 @@ object FileUploadManager {
         } catch (e: Exception) {
             null
         }
-    }
-
-    private fun String.matchesGlob(pattern: String): Boolean {
-        if (pattern == "*/*") return true
-        val regex = Regex(pattern.replace("*", ".*").replace("?", "."))
-        return regex.matches(this)
     }
 }
