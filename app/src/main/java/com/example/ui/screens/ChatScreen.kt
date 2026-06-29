@@ -20,7 +20,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
@@ -36,7 +35,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.data.api.GeminiModel
 import com.example.data.database.ChatMessage
 import com.example.data.database.ChatSession
-import com.example.data.filemanager.AttachedFile
 import com.example.data.filemanager.FileUploadManager
 import com.example.data.personality.PersonalityProfile
 import com.example.ui.components.*
@@ -51,9 +49,7 @@ fun ChatScreen(
     onMenuClick: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
-    val context = LocalContext.current
     val focusManager = LocalFocusManager.current
-    val coroutineScope = rememberCoroutineScope()
 
     val sessions by viewModel.sessions.collectAsStateWithLifecycle()
     val activeSessionId by viewModel.activeSessionId.collectAsStateWithLifecycle()
@@ -264,112 +260,36 @@ fun ChatScreen(
                     onNewChat = { viewModel.startNewChat() }
                 )
 
-                if (attachedFiles.isNotEmpty()) {
-                    Surface(modifier = Modifier.fillMaxWidth(), color = ShadowBlackCard, border = BorderStroke(0.5.dp, BorderGrayDark)) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 6.dp),
-                            horizontalArrangement = Arrangement.spacedBy(6.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            LazyRow(modifier = Modifier.weight(1f), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                                items(attachedFiles.toList(), key = { it.id }) { file ->
-                                    Card(
-                                        modifier = Modifier.width(110.dp),
-                                        shape = RoundedCornerShape(8.dp),
-                                        colors = CardDefaults.cardColors(containerColor = ShadowBlack),
-                                        border = BorderStroke(0.5.dp, BorderGrayDark)
-                                    ) {
-                                        Row(
-                                            modifier = Modifier.padding(6.dp),
-                                            horizontalArrangement = Arrangement.spacedBy(4.dp),
-                                            verticalAlignment = Alignment.CenterVertically
-                                        ) {
-                                            Text(file.icon, fontSize = 12.sp)
-                                            Column(modifier = Modifier.weight(1f)) {
-                                                Text(file.fileName, fontSize = 9.sp, color = MilkyWhiteText, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                                                Text(file.formattedSize, fontSize = 8.sp, color = MutedGrayDark, fontFamily = FontFamily.Monospace)
-                                            }
-                                            IconButton(onClick = { FileUploadManager.removeFile(file.id) }, modifier = Modifier.size(16.dp)) {
-                                                Icon(Icons.Rounded.Close, "Remove", tint = MutedGrayDark, modifier = Modifier.size(10.dp))
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                            IconButton(onClick = { FileUploadManager.clearAll() }, modifier = Modifier.size(28.dp)) {
-                                Icon(Icons.Rounded.ClearAll, "Clear all", tint = MutedGrayDark, modifier = Modifier.size(16.dp))
-                            }
-                        }
-                    }
-                }
-
-                Surface(modifier = Modifier.fillMaxWidth(), color = ShadowBlackCard, shadowElevation = 16.dp) {
+                // Bottom input surface
+                Surface(
+                    modifier = Modifier.fillMaxWidth(),
+                    color = ShadowBlackCard,
+                    shadowElevation = 16.dp
+                ) {
                     Column(modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp)) {
-                        // Attached files section
-                        if (attachedFiles.isNotEmpty()) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
-                                horizontalArrangement = Arrangement.spacedBy(6.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                LazyRow(modifier = Modifier.weight(1f), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                                    items(attachedFiles.toList(), key = { it.id }) { file ->
-                                        Card(
-                                            modifier = Modifier.width(100.dp),
-                                            shape = RoundedCornerShape(8.dp),
-                                            colors = CardDefaults.cardColors(containerColor = ShadowBlack),
-                                            border = BorderStroke(0.5.dp, BalanceGold.copy(alpha = 0.2f))
-                                        ) {
-                                            Row(
-                                                modifier = Modifier.padding(6.dp),
-                                                horizontalArrangement = Arrangement.spacedBy(4.dp),
-                                                verticalAlignment = Alignment.CenterVertically
-                                            ) {
-                                                Text(file.icon, fontSize = 14.sp)
-                                                Column(modifier = Modifier.weight(1f)) {
-                                                    Text(file.fileName, fontSize = 9.sp, color = MilkyWhiteText, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                                                    Text(file.formattedSize, fontSize = 8.sp, color = MutedGrayDark, fontFamily = FontFamily.Monospace)
-                                                }
-                                                IconButton(onClick = { FileUploadManager.removeFile(file.id) }, modifier = Modifier.size(18.dp)) {
-                                                    Icon(Icons.Rounded.Close, "Remove", tint = MutedGrayDark, modifier = Modifier.size(12.dp))
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                                IconButton(onClick = { FileUploadManager.clearAll() }, modifier = Modifier.size(30.dp)) {
-                                    Icon(Icons.Rounded.ClearAll, "Clear all", tint = MutedGrayDark, modifier = Modifier.size(18.dp))
-                                }
-                            }
-                        }
-
                         // Main input row
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.spacedBy(8.dp),
                             verticalAlignment = Alignment.Bottom
                         ) {
-                            // File upload button
-                            IconButton(
-                                onClick = { /* File upload handled by FileUploadBar */ },
-                                modifier = Modifier.size(40.dp),
-                                enabled = !isGenerating
-                            ) {
-                                Icon(Icons.Rounded.AttachFile, "Attach file", tint = if (isGenerating) MutedGrayDark.copy(alpha = 0.3f) else BalanceGold.copy(alpha = 0.7f), modifier = Modifier.size(20.dp))
-                            }
+                            FileUploadBar(
+                                onFilesChanged = {},
+                                enabled = !isGenerating,
+                                compact = true
+                            )
 
-                            // Input field with refined styling
                             OutlinedTextField(
                                 value = inputPrompt,
                                 onValueChange = { inputPrompt = it },
                                 modifier = Modifier.weight(1f).heightIn(min = 48.dp, max = 120.dp),
-                                placeholder = { 
+                                placeholder = {
                                     Text(
-                                        "Harmonize your thoughts...", 
-                                        color = MutedGrayDark.copy(alpha = 0.6f), 
+                                        "Harmonize your thoughts...",
+                                        color = MutedGrayDark.copy(alpha = 0.6f),
                                         fontSize = 14.sp,
                                         fontStyle = FontStyle.Italic
-                                    ) 
+                                    )
                                 },
                                 shape = RoundedCornerShape(24.dp),
                                 colors = OutlinedTextFieldDefaults.colors(
@@ -379,9 +299,7 @@ fun ChatScreen(
                                     unfocusedContainerColor = ShadowBlack.copy(alpha = 0.5f),
                                     cursorColor = BalanceGold,
                                     focusedTextColor = MilkyWhiteText,
-                                    unfocusedTextColor = MilkyWhiteText.copy(alpha = 0.9f),
-                                    focusedPlaceholderColor = MutedGrayDark.copy(alpha = 0.5f),
-                                    unfocusedPlaceholderColor = MutedGrayDark.copy(alpha = 0.4f)
+                                    unfocusedTextColor = MilkyWhiteText.copy(alpha = 0.9f)
                                 ),
                                 maxLines = 5,
                                 textStyle = MaterialTheme.typography.bodyMedium.copy(lineHeight = 22.sp),
@@ -394,7 +312,6 @@ fun ChatScreen(
                                 }
                             )
 
-                            // Send button with enhanced visual feedback
                             val canSend = (inputPrompt.isNotBlank() || attachedFiles.isNotEmpty()) && !isGenerating
                             Surface(
                                 modifier = Modifier.size(44.dp),
@@ -414,8 +331,8 @@ fun ChatScreen(
                                     modifier = Modifier.fillMaxSize()
                                 ) {
                                     Icon(
-                                        Icons.AutoMirrored.Rounded.Send, 
-                                        "Send", 
+                                        Icons.AutoMirrored.Rounded.Send,
+                                        "Send",
                                         tint = if (canSend) ShadowBlack else MutedGrayDark.copy(alpha = 0.3f),
                                         modifier = Modifier.size(22.dp)
                                     )
@@ -431,18 +348,18 @@ fun ChatScreen(
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Row(horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
-                                // Deep Think toggle
+                            Row(
+                                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
                                 AssistChip(
                                     onClick = { viewModel.isDeepThinkingEnabled.value = !viewModel.isDeepThinkingEnabled.value },
                                     label = { Text("Deep Think", fontSize = 10.sp, fontWeight = if (isDeepThinkingEnabled) FontWeight.Bold else FontWeight.Normal) },
-                                    leadingIcon = { 
+                                    leadingIcon = {
                                         Icon(
-                                            Icons.Rounded.Psychology, 
-                                            null, 
-                                            Modifier.size(14.dp), 
+                                            Icons.Rounded.Psychology, null, Modifier.size(14.dp),
                                             tint = if (isDeepThinkingEnabled) BalanceGold else MutedGrayDark
-                                        ) 
+                                        )
                                     },
                                     colors = AssistChipDefaults.assistChipColors(
                                         containerColor = if (isDeepThinkingEnabled) BalanceGold.copy(alpha = 0.15f) else Color.Transparent,
@@ -455,24 +372,26 @@ fun ChatScreen(
                                     modifier = Modifier.height(28.dp)
                                 )
 
-                                // Voice input button
                                 Surface(
                                     onClick = { viewModel.isListening.value = true },
                                     shape = CircleShape,
                                     color = if (isListening) BalanceGold.copy(alpha = 0.2f) else Color.Transparent,
                                     modifier = Modifier.size(32.dp)
                                 ) {
-                                    Icon(
-                                        Icons.Rounded.Mic, 
-                                        "Voice", 
-                                        tint = if (isListening) BalanceGold else MutedGrayDark,
-                                        modifier = Modifier.size(18.dp).align(Alignment.Center)
-                                    )
+                                    Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
+                                        Icon(
+                                            Icons.Rounded.Mic, "Voice",
+                                            tint = if (isListening) BalanceGold else MutedGrayDark,
+                                            modifier = Modifier.size(18.dp)
+                                        )
+                                    }
                                 }
                             }
 
-                            // Status indicator
-                            Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
+                            Row(
+                                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
                                 if (isGenerating) {
                                     CircularProgressIndicator(
                                         modifier = Modifier.size(14.dp),
