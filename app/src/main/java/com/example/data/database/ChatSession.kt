@@ -31,6 +31,12 @@ data class ChatSession(
 
     val modelUsed: String = "",
 
+    val personalityId: String = "",
+
+    val personalityName: String = "",
+
+    val contextSnapshotJson: String? = null,
+
     val tags: String = "",
 
     val colorLabel: String = ""
@@ -40,14 +46,11 @@ data class ChatSession(
         get() = title.ifBlank { "Empty Balance" }
 
     val tagList: List<String>
-        get() = tags.split(",")
-            .map { it.trim() }
-            .filter { it.isNotBlank() }
+        get() = tags.split(",").map { it.trim() }.filter { it.isNotBlank() }
 
     val formattedDate: String
         get() {
-            val now = System.currentTimeMillis()
-            val diff = now - createdAt
+            val diff = System.currentTimeMillis() - createdAt
             return when {
                 diff < 60_000 -> "Just now"
                 diff < 3_600_000 -> "${diff / 60_000}m ago"
@@ -61,18 +64,24 @@ data class ChatSession(
             }
         }
 
-    val isActive: Boolean
-        get() = !isArchived
-
-    val hasMessages: Boolean
-        get() = messageCount > 0
-
-    val hasLastMessage: Boolean
-        get() = lastMessagePreview.isNotBlank()
+    val isActive: Boolean get() = !isArchived
+    val hasMessages: Boolean get() = messageCount > 0
+    val hasLastMessage: Boolean get() = lastMessagePreview.isNotBlank()
+    val hasPersonality: Boolean get() = personalityId.isNotBlank()
 
     val lastMessageSnippet: String
         get() = lastMessagePreview.take(80).replace("\n", " ") +
                 if (lastMessagePreview.length > 80) "…" else ""
+
+    val modelDisplayName: String
+        get() {
+            if (modelUsed.isBlank()) return ""
+            return try {
+                com.example.data.api.GeminiModel.fromModelId(modelUsed).displayName
+            } catch (e: Exception) {
+                modelUsed
+            }
+        }
 
     fun toJson(): Map<String, Any?> = mapOf(
         "id" to id,
@@ -87,29 +96,17 @@ data class ChatSession(
         "lastMessageTimestamp" to lastMessageTimestamp,
         "totalTokensUsed" to totalTokensUsed,
         "modelUsed" to modelUsed,
+        "personalityId" to personalityId,
+        "personalityName" to personalityName,
+        "contextSnapshotJson" to contextSnapshotJson,
         "tags" to tags,
         "colorLabel" to colorLabel
     )
 
-    fun pin(): ChatSession = copy(
-        isPinned = true,
-        updatedAt = System.currentTimeMillis()
-    )
-
-    fun unpin(): ChatSession = copy(
-        isPinned = false,
-        updatedAt = System.currentTimeMillis()
-    )
-
-    fun archive(): ChatSession = copy(
-        isArchived = true,
-        updatedAt = System.currentTimeMillis()
-    )
-
-    fun unarchive(): ChatSession = copy(
-        isArchived = false,
-        updatedAt = System.currentTimeMillis()
-    )
+    fun pin(): ChatSession = copy(isPinned = true, updatedAt = System.currentTimeMillis())
+    fun unpin(): ChatSession = copy(isPinned = false, updatedAt = System.currentTimeMillis())
+    fun archive(): ChatSession = copy(isArchived = true, updatedAt = System.currentTimeMillis())
+    fun unarchive(): ChatSession = copy(isArchived = false, updatedAt = System.currentTimeMillis())
 
     fun rename(newTitle: String): ChatSession = copy(
         title = newTitle,
@@ -121,19 +118,13 @@ data class ChatSession(
         if (tag.isNotBlank() && !currentTags.contains(tag.trim())) {
             currentTags.add(tag.trim())
         }
-        return copy(
-            tags = currentTags.joinToString(", "),
-            updatedAt = System.currentTimeMillis()
-        )
+        return copy(tags = currentTags.joinToString(", "), updatedAt = System.currentTimeMillis())
     }
 
     fun removeTag(tag: String): ChatSession {
         val currentTags = tagList.toMutableList()
         currentTags.remove(tag.trim())
-        return copy(
-            tags = currentTags.joinToString(", "),
-            updatedAt = System.currentTimeMillis()
-        )
+        return copy(tags = currentTags.joinToString(", "), updatedAt = System.currentTimeMillis())
     }
 
     fun updateWithLastMessage(
@@ -150,14 +141,28 @@ data class ChatSession(
         updatedAt = System.currentTimeMillis()
     )
 
+    fun setModel(modelId: String): ChatSession = copy(
+        modelUsed = modelId,
+        updatedAt = System.currentTimeMillis()
+    )
+
+    fun setPersonality(personalityId: String, personalityName: String): ChatSession = copy(
+        personalityId = personalityId,
+        personalityName = personalityName,
+        updatedAt = System.currentTimeMillis()
+    )
+
+    fun setContextSnapshot(snapshotJson: String?): ChatSession = copy(
+        contextSnapshotJson = snapshotJson,
+        updatedAt = System.currentTimeMillis()
+    )
+
     fun setColorLabel(color: String): ChatSession = copy(
         colorLabel = color,
         updatedAt = System.currentTimeMillis()
     )
 
-    fun touch(): ChatSession = copy(
-        updatedAt = System.currentTimeMillis()
-    )
+    fun touch(): ChatSession = copy(updatedAt = System.currentTimeMillis())
 
     companion object {
         const val COLOR_NONE = ""
@@ -180,12 +185,16 @@ data class ChatSession(
 
         fun createNew(
             title: String = "New Balance Chat",
-            modelUsed: String = ""
+            modelUsed: String = "",
+            personalityId: String = "",
+            personalityName: String = ""
         ): ChatSession = ChatSession(
             title = title,
             createdAt = System.currentTimeMillis(),
             updatedAt = System.currentTimeMillis(),
-            modelUsed = modelUsed
+            modelUsed = modelUsed,
+            personalityId = personalityId,
+            personalityName = personalityName
         )
 
         fun fromJson(json: Map<String, Any?>): ChatSession {
@@ -202,6 +211,9 @@ data class ChatSession(
                 lastMessageTimestamp = (json["lastMessageTimestamp"] as? Number)?.toLong() ?: 0,
                 totalTokensUsed = (json["totalTokensUsed"] as? Number)?.toInt() ?: 0,
                 modelUsed = json["modelUsed"] as? String ?: "",
+                personalityId = json["personalityId"] as? String ?: "",
+                personalityName = json["personalityName"] as? String ?: "",
+                contextSnapshotJson = json["contextSnapshotJson"] as? String,
                 tags = json["tags"] as? String ?: "",
                 colorLabel = json["colorLabel"] as? String ?: ""
             )
