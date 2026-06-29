@@ -47,20 +47,23 @@ data class ChatMessage(
 
     val parentMessageId: Long? = null,
 
-    val metadata: String? = null
+    val metadata: String? = null,
+
+    // File attachment support
+    val attachedFilesJson: String? = null,
+
+    val modelUsed: String? = null,
+
+    val personalityUsed: String? = null,
+
+    val generationConfigJson: String? = null
 ) {
 
-    val isUser: Boolean
-        get() = role == ROLE_USER
-
-    val isModel: Boolean
-        get() = role == ROLE_MODEL
-
-    val isSystem: Boolean
-        get() = role == ROLE_SYSTEM
-
-    val hasReasoning: Boolean
-        get() = !reasoning.isNullOrBlank()
+    val isUser: Boolean get() = role == ROLE_USER
+    val isModel: Boolean get() = role == ROLE_MODEL
+    val isSystem: Boolean get() = role == ROLE_SYSTEM
+    val hasReasoning: Boolean get() = !reasoning.isNullOrBlank()
+    val hasAttachments: Boolean get() = !attachedFilesJson.isNullOrBlank()
 
     val formattedDuration: String
         get() {
@@ -82,6 +85,9 @@ data class ChatMessage(
     val characterCount: Int
         get() = text.length
 
+    val estimatedTokens: Int
+        get() = (text.length / 4) + (reasoning?.length?.div(4) ?: 0) + 8
+
     fun toPromptFormat(): String = when (role) {
         ROLE_USER -> "User: $text"
         ROLE_MODEL -> "Assistant: $text"
@@ -95,9 +101,7 @@ data class ChatMessage(
         timestamp = System.currentTimeMillis()
     )
 
-    fun toggleBookmark(): ChatMessage = copy(
-        isBookmarked = !isBookmarked
-    )
+    fun toggleBookmark(): ChatMessage = copy(isBookmarked = !isBookmarked)
 
     companion object {
         const val ROLE_USER = "user"
@@ -107,12 +111,18 @@ data class ChatMessage(
         fun createUserMessage(
             sessionId: Long,
             text: String,
-            parentMessageId: Long? = null
+            parentMessageId: Long? = null,
+            attachedFilesJson: String? = null,
+            modelUsed: String? = null,
+            personalityUsed: String? = null
         ): ChatMessage = ChatMessage(
             sessionId = sessionId,
             role = ROLE_USER,
             text = text,
-            parentMessageId = parentMessageId
+            parentMessageId = parentMessageId,
+            attachedFilesJson = attachedFilesJson,
+            modelUsed = modelUsed,
+            personalityUsed = personalityUsed
         )
 
         fun createModelMessage(
@@ -121,7 +131,10 @@ data class ChatMessage(
             reasoning: String? = null,
             durationMs: Long? = null,
             tokenCount: Int? = null,
-            parentMessageId: Long? = null
+            parentMessageId: Long? = null,
+            modelUsed: String? = null,
+            personalityUsed: String? = null,
+            generationConfigJson: String? = null
         ): ChatMessage = ChatMessage(
             sessionId = sessionId,
             role = ROLE_MODEL,
@@ -129,7 +142,10 @@ data class ChatMessage(
             reasoning = reasoning,
             durationMs = durationMs,
             tokenCount = tokenCount,
-            parentMessageId = parentMessageId
+            parentMessageId = parentMessageId,
+            modelUsed = modelUsed,
+            personalityUsed = personalityUsed,
+            generationConfigJson = generationConfigJson
         )
 
         fun createSystemMessage(
@@ -154,7 +170,11 @@ data class ChatMessage(
                 isEdited = json["isEdited"] as? Boolean ?: false,
                 isBookmarked = json["isBookmarked"] as? Boolean ?: false,
                 parentMessageId = (json["parentMessageId"] as? Number)?.toLong(),
-                metadata = json["metadata"] as? String
+                metadata = json["metadata"] as? String,
+                attachedFilesJson = json["attachedFilesJson"] as? String,
+                modelUsed = json["modelUsed"] as? String,
+                personalityUsed = json["personalityUsed"] as? String,
+                generationConfigJson = json["generationConfigJson"] as? String
             )
         }
     }
@@ -171,17 +191,18 @@ data class ChatMessage(
         "isEdited" to isEdited,
         "isBookmarked" to isBookmarked,
         "parentMessageId" to parentMessageId,
-        "metadata" to metadata
+        "metadata" to metadata,
+        "attachedFilesJson" to attachedFilesJson,
+        "modelUsed" to modelUsed,
+        "personalityUsed" to personalityUsed,
+        "generationConfigJson" to generationConfigJson
     )
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is ChatMessage) return false
-        return id == other.id &&
-                sessionId == other.sessionId &&
-                role == other.role &&
-                text == other.text &&
-                timestamp == other.timestamp
+        return id == other.id && sessionId == other.sessionId && role == other.role &&
+                text == other.text && timestamp == other.timestamp
     }
 
     override fun hashCode(): Int {
@@ -198,8 +219,10 @@ data class ChatMessage(
             append("ChatMessage(id=$id, role='$role', sessionId=$sessionId, ")
             append("text='$preview', ")
             if (hasReasoning) append("reasoning=true, ")
+            if (hasAttachments) append("attachments=true, ")
             if (durationMs != null) append("duration=$formattedDuration, ")
             if (isBookmarked) append("bookmarked=true, ")
+            if (modelUsed != null) append("model=$modelUsed, ")
             append("timestamp=$timestamp)")
         }
     }
